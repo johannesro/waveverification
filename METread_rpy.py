@@ -2,9 +2,10 @@
 from METread import *
 import rpy2.robjects as robjects # open an R session in python
 import rpy2.robjects.numpy2ri as rpyn # convert R data to numpy objects
+import sys
+import os
 
-
-
+os.system('export R_LIBS=/disk1/local/R-packages')
 robjects.r('''library(miIO)''') # load the miIO package in the R session
 miReadFelt = robjects.r('miReadFelt') # make the miReadFelt function available in python
 
@@ -13,6 +14,12 @@ feltnumbers = {'Hs': 200, 'Tp': 201, 'Tm02':202, 'DDP':203, 'DDM':204,  'Hs_s': 
 rfeltname = {'Hs': "HS.L0", 'Tp': "TP.L0", 'Tm02':"TS.L0", 'DDP':"DPP.L0", 'DDM':"DDM.L0",'Hs_s':"HSSW.L0",'Tp_s':"TPSW.L0",'Tm02_s':"TMSW.L0",
              'DDP_s':"DDPSW.L0", 'DDM_s':"DDMSW.L0",'FF':"FF.L0",'DD':"DD.L0"} # name of variables in r2py interface
 
+
+class Blackhole(object):
+    def write(self, string):
+        pass
+
+stdout = sys.stdout
 
 def rx(data, var):
     return rpyn.ri2numpy(data.rx2(var))
@@ -43,7 +50,9 @@ def WAM4_modrun(location, run, varnamelist, step=1):
         robjects.r('''prg <- seq(0, 66, by=1) ''')
         prg = robjects.r['prg']
         # use R function to read from felt file
+        sys.stdout = Blackhole()
         x = miReadFelt(files=filename,sites=pos, prm=prm, prg=prg, collapse_time=False, acc=6, df=True);
+        sys.stdout = stdout
         # get time as datetime object
         y,m,d,h = rx(x,'YEAR'),rx(x,'MONTH'),rx(x,'DAY'),rx(x,'HOUR')
         time = []
@@ -51,7 +60,10 @@ def WAM4_modrun(location, run, varnamelist, step=1):
             try:
                 time.append(dt.datetime(int(y[i]), int(m[i]), int(d[i]), int(h[i])))
             except ValueError: # some felt file have missing time steps. If so, fill time list with next hour
-                time.append(time[-1]+dt.timedelta(hours=1))
+                try:
+                    time.append(time[-1]+dt.timedelta(hours=1))
+                except IndexError:
+                    time.append(run) # if this is the first time step
         datadict = {'time':time}
         for varname in varnamelist:
             var = rx(x,rfeltname[varname])
@@ -95,7 +107,9 @@ def WAM10_modrun(location, run, varnamelist, step=1):
         robjects.r('''prg <- seq(0, 66, by=1) ''')
         prg = robjects.r['prg']
         # use R function to read from felt file
+        sys.stdout = Blackhole()
         x = miReadFelt(files=filename,sites=pos, prm=prm, prg=prg, collapse_time=False, acc=6, df=True);
+        sys.stdout = stdout
         # get time as datetime object
         y,m,d,h = rx(x,'YEAR'),rx(x,'MONTH'),rx(x,'DAY'),rx(x,'HOUR')
         time = []
@@ -141,7 +155,9 @@ def HIRLAM8_modrun(location, run, varnamelist, step=1):
         robjects.r('''prg <- seq(0, 66, by=1) ''')
         prg = robjects.r['prg']
         # use R function to read from felt file
+        sys.stdout = Blackhole()
         x = miReadFelt(files=filename,sites=pos, prm=prm, prg=prg, collapse_time=False, acc=6, df=True);
+        sys.stdout = stdout
         FF = rx(x,"FF") # Put the data into a python array using ri2numpy
         DD = rx(x,"DD")
         # get time as datetime object

@@ -29,7 +29,8 @@ import MySQLdb
 
 # variable list for ECMWF netcdf files
 ECvardict ={ 'Hs':  'swh', 'Tp':  'pp1d', 'Tm02': 'mp2', 'DDM': 'mwd', 'Hs_s': 'shts', 'Tm02_s': 'p2ps', 'DDM_s': 'mdts', 'FF': 'wind'}
-
+MWAMvardict = { 'Hs':  'hs', 'Tp':  'tp', 'Tm02': 'tm2', 'DDM': 'thq', 'Hs_s': 'hs_swell', 'Tm02_s': 'tm2_swell', 'DDM_s': 'thw_swell', 'FF': 'ff'}
+WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
     '''
@@ -89,6 +90,57 @@ def AROME_modrun(location, run, varnamelist, step=1):
        datadict = {'time':nan,'FF':nan, 'DD':nan, 'x_wind_10m':nan, 'y_wind_10m':nan}
     return datadict
 
+def WAMAROME2W_modrun(location, run, varnamelist, step=1):
+    '''
+    location: (lat, lon) touple or list
+    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
+    '''
+    # ensure correct formats
+    location = list(location)
+    #varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
+    # check file, preferably from opdata
+    filename=run.strftime("/vol/fou/atmos/jakobks/WAM/WAM_Coupled2W/netcdf/WAM_2WCoupled_%Y%m%d.nc")
+    print(' ')
+    print('reading '+filename)
+    if os.path.isfile(filename):
+        datadict = nctimeseries(filename, varnamelist, location)
+        WAdatadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
+        datadict = {'time':WAdatadict['time']}
+        for varname, WAname in WAMAROMEvardict.iteritems():
+            datadict.update({varname: WAdatadict[WAname]})
+        #datadict['DD'], datadict['FF'] = DD_FF(datadict['x_wind_10m'],datadict['y_wind_10m'])
+    else:
+       print('file '+filename+' does not exist; returning missing values')
+       nan = sp.ones(49)*sp.nan
+       datadict = {'time':nan,'FF':nan, 'Hs':nan}#, 'x_wind_10m':nan, 'y_wind_10m':nan}
+    return datadict
+
+def WAMAROME1W_modrun(location, run, varnamelist, step=1):
+    '''
+    location: (lat, lon) touple or list
+    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
+    '''
+    # ensure correct formats
+    location = list(location)
+    #varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
+    # check file, preferably from opdata
+    filename=run.strftime("/vol/fou/atmos/jakobks/WAM/WAM_Coupled1W/netcdf/WAM_1WCoupled_%Y%m%d.nc")
+    print(' ')
+    print('reading '+filename)
+    if os.path.isfile(filename):
+        datadict = nctimeseries(filename, varnamelist, location)
+        WAdatadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
+        datadict = {'time':WAdatadict['time']}
+        for varname, WAname in WAMAROMEvardict.iteritems():
+            datadict.update({varname: WAdatadict[WAname]})
+        #datadict['DD'], datadict['FF'] = DD_FF(datadict['x_wind_10m'],datadict['y_wind_10m'])
+    else:
+       print('file '+filename+' does not exist; returning missing values')
+       nan = sp.ones(49)*sp.nan
+       datadict = {'time':nan,'FF':nan, 'Hs':nan}#, 'x_wind_10m':nan, 'y_wind_10m':nan}
+    return datadict
+
+
 def LAWAM_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
@@ -138,6 +190,28 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
        for varname in ECvardict.keys():
            datadict.update({varname: nan})
     return datadict
+
+def MWAM_modrun(location, run, varnamelist, step=1):
+    '''
+    location: (lat, lon) touple or list
+    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
+    '''
+    # ensure correct formats
+    location = list(location)
+    # check file, preferably from opdata
+    filename=run.strftime("/opdata/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
+    print(' ')
+    print('reading '+filename)
+    if os.path.isfile(filename):
+        datadict = nctimeseries(filename, MWAMvardict.values(), location)
+    else:
+       print('file '+filename+' does not exist; returning missing values')
+       nan = sp.ones(67)*sp.nan
+       datadict = {'time':nan}
+       for varname in MWAMvardict.keys():
+           datadict.update({varname: nan})
+    return datadict
+
 
 def Nordic4_stormsurge_modrun(location, run, varnamelist, step=1):
     '''
@@ -194,11 +268,13 @@ def nctimeseries(filename, varnamelist, coordinate):
         try:
             if len(nc.variables[var].shape) == 3:
                 data[var] = nc.variables[var][:,y,x]
+            if len(nc.variables[var].shape) == 4:
+                data[var] = nc.variables[var][:,0,y,x]
         except KeyError:
             data[var] = None
-    # check varnames 
-    varnames = {'Hs':'hs', 'Tp':'tp', 'FF':'ff','DD':'dd','Tm02':'tm2', 'DDM':'thq'}
-    for varname,altname in varnames.iteritems():
+    # check for alternative varnames 
+    varnames = {'hs':'Hs', 'tp':'Tp', 'ff':'FF', 'dd':'DD', 'tm2':'Tm02', 'thq':'DDM', 'significant_wave_height':'Hs', 'wind_speed_10m':'FF'}
+    for altname,varname in varnames.iteritems():
         try:
             data[varname]=data[altname]
         except KeyError:
@@ -295,6 +371,33 @@ def subjectiveforecast(runtime, station, varlist):
         value = value2+value1
         vardict.update({var:(time,value)})
     return vardict
+
+class stationfiles():
+    '''
+    Class to read a list of subsequent validation station files
+    example:
+    sfiles = stationfils(glob.glob('ekofisk_2014??.nc'))
+
+    '''
+    def __init__(self, files):
+        self.time, self.nclist = [], []
+        files.sort()
+        for filename in files:
+            nc = nc4.Dataset(filename,'r')
+            self.nclist.append(nc)
+            self.time=self.time+list(nc4.num2date(nc.variables['time'],nc.variables['time'].units))
+
+    def get_var(self, varname, groupname,treshhold=None):
+        var = []
+        for nc in self.nclist:
+            ncg = nc.groups[groupname]
+            var.append(ncg.variables[varname][:])
+        var = np.ma.concatenate(var, axis=1)
+        var[var.mask==True]=sp.nan
+        if not treshhold==None:
+            var[var > treshhold]=sp.nan
+        return var
+
 
 
 '''

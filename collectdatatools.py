@@ -165,7 +165,7 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
     daysofmonth = calendar.monthrange(year,month)[1]
     if numdays == None:
         numdays = daysofmonth
-    firstdaytoread = sday-1 if sday>3 else sday-4 #sday starts at 1, firstdaytoread at 0 for the 1rst of each month
+    firstdaytoread = sday-1 if sday>1 else sday-4 #sday starts at 1, firstdaytoread at 0 for the 1rst of each month
     for day in range(firstdaytoread,sday+numdays-1): # day also start at 0 for the 1rst of each month (python indexing)
         print('day of month: '+str(day+1))
         cyear, cmonth, cday = year, month, day
