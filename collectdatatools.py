@@ -15,9 +15,10 @@ import variables
 modlength = 67 # hours in each model run
 nleadtimes6 = int(sp.ceil(1.0*modlength/6))
 nleadtimes12 = int(sp.ceil(1.0*modlength/12))
+nleadtimes24 = int(sp.ceil(1.0*modlength/24))
 subjlist = ['ekofiskL', 'ekofisk', 'draugen', 'valhall', 'oseberg', 'osebergc']
 subj_reinitime = {'ekofiskL':6, 'ekofisk':6, 'draugen':12, 'valhall':12, 'oseberg':12, 'osebergc':12}
-reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWWAM':12}
+reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWWAM':12, 'WAMAROME2W':24, 'WAMAROME1W':24}
 
 class validationfile():
     '''
@@ -50,20 +51,24 @@ class validationfile():
         dimtime =     nc.createDimension('time', size=24*ndays) #size = None?
         dimleadtime6  = nc.createDimension('lead_time6h', size=nleadtimes6)
         dimleadtime12 = nc.createDimension('lead_time12h', size=nleadtimes12)
+        dimleadtime24 = nc.createDimension('lead_time24h', size=nleadtimes24)
         dimwaveobs =  nc.createDimension('n_waveobs', size=3)
         dimwindobs =  nc.createDimension('n_windobs', size=6)
 
         nctime     = nc.createVariable('time',sp.float64, dimensions=('time',))
         ncleadtime6 = nc.createVariable('lead_time6h',sp.int32, dimensions=('lead_time6h',))
         ncleadtime12 = nc.createVariable('lead_time12h',sp.int32, dimensions=('lead_time12h',))
+        ncleadtime24 = nc.createVariable('lead_time24h',sp.int32, dimensions=('lead_time24h',))
 # add time to nc file
         ncleadtime6[:] = range(0,modlength+1,6)
         ncleadtime12[:] = range(0,modlength+1,12)
+        ncleadtime24[:] = range(0,modlength+1,24)
 
 # generate time for netcdf file
         nctime.units = 'seconds since 1970-01-01 00:00:00'
         ncleadtime6.units = 'hours'
         ncleadtime12.units = 'hours'
+        ncleadtime24.units = 'hours'
         t0 = self.starttime - dt.datetime(1970,1,1)
         nctime[:] = t0.total_seconds() + sp.array(range(ndays*24))*3600.
 

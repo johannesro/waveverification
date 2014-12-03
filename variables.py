@@ -36,4 +36,11 @@ LAWAM = ECWAM
 AROME = {'FF': ['wind speed', 'm/s', ''],
          'DD': ['wind direction', 'degree', '', 'meteorological']}
 
+WAMAROME2W = {'FF': ['wind speed', 'm/s', ''],
+         'Hs': ['significant wave height', 'm', '']}
+
+WAMAROME1W = {'FF': ['wind speed', 'm/s', ''],
+         'Hs': ['significant wave height', 'm', '']}
+
+
 HIRLAM8=AROME
