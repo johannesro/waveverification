@@ -31,7 +31,10 @@ if len(timep)==6:
     year = timep[0:4]
     timestr = month+'-'+year
     t1 = dt.datetime(int(year), int(month), 1)
-    t2 = dt.datetime(int(year), int(month)+1, 1)
+    if month < 12:
+        t2 = dt.datetime(int(year), int(month)+1, 1)
+    else:
+        t2 = dt.datetime(int(year)+1, 1, 1) 
 else:
     t1 = dt.datetime(int(year), 1, 1)
     t2 = dt.datetime(int(year)+1, 1, 1)
