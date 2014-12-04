@@ -31,7 +31,7 @@ if len(timep)==6:
     year = timep[0:4]
     timestr = month+'-'+year
     t1 = dt.datetime(int(year), int(month), 1)
-    if month < 12:
+    if int(month) < 12:
         t2 = dt.datetime(int(year), int(month)+1, 1)
     else:
         t2 = dt.datetime(int(year)+1, 1, 1) 
@@ -40,9 +40,12 @@ else:
     t2 = dt.datetime(int(year)+1, 1, 1)
     timestr=timep
 print('time: '+timestr)
+print(t1, t2)
 
 # plotpath
 ppath = '/disk4/waveverification/'+timep+'/'
+# set color table for models
+ct = {'Subjective': 'r', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'b', 'AROME': 'g', 'HIRLAM8': 'y'}
 
 def select_var_from_models(G,varname):
     modeldata={}
@@ -140,7 +143,7 @@ for station, parameters in locations.iteritems():
         for gname, var in modeldata.iteritems():
            if sp.isnan(var[0]).all() or sp.isnan(obs).all():
                continue
-           vt.scqqplot(obs, var[0], label=gname, ax1=ax1, ax2=ax2)
+           vt.scqqplot(obs, var[0],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)
         ax1.legend(loc='lower right',fontsize='small')
         ax1.set_title(station+' '+varname+' ['+units+']'+' obs#'+str(sensor+1)+' '+timestr)
         pfilename = station+'_'+varname+'_scatterqq.png'
@@ -159,7 +162,7 @@ for station, parameters in locations.iteritems():
             for gname, var in modeldata.iteritems():
                 if sp.isnan(var[0][mask]).all() or sp.isnan(obs[mask]).all():
                     continue
-                vt.scqqplot(obs[mask], var[0][mask], label=gname, ax1=ax1, ax2=ax2, prob=sp.arange(0.02,1.,0.02))
+                vt.scqqplot(obs[mask], var[0][mask],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2, prob=sp.arange(0.02,1.,0.02))
             ax1.set_title(station+' '+varname+' ['+units+'] for wind direction interval '+str(interval))
             pfilename = station+'_'+varname+'_scatterqq_dir'+str(interval[0])+'.png'
             fig.tight_layout(pad=0.2)
@@ -182,7 +185,7 @@ for station, parameters in locations.iteritems():
                 continue
             ax1.plot(time, Nobs, label='observation #'+str(obsnum),lw=1)
         for gname, var in modeldata.iteritems():
-            ax1.plot(time, var[0],'--', label=gname, lw=2)
+            ax1.plot(time, var[0],'--',color=ct[gname], label=gname, lw=2)
         ax1.legend(fontsize='small')
         ax1.grid('on',which='minor');ax1.grid('on',which='major',linestyle='--',linewidth=0.5)
         ax1.set_title(station+' '+varname+' ['+units+']')
@@ -211,10 +214,10 @@ for station, parameters in locations.iteritems():
         ax4 = fig.add_subplot(414)
         ax1.set_title(station+' '+varname+' forecast skill'+' '+timestr)
         for gname, var in modeldata.iteritems():
-            vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.amerr, label=gname, ax=ax1)
-            vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.rmse, label=gname, ax=ax2)
-            vt.forecastskillplot(-obs, -var, G[gname].getncattr('reinitialization_step'), vt.bias, label=gname, ax=ax3)
-            vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.pearsonr, label=gname, ax=ax4)
+            vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.amerr, color=ct[gname],  label=gname, ax=ax1)
+            vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.rmse, color=ct[gname],  label=gname, ax=ax2)
+            vt.forecastskillplot(-obs, -var, G[gname].getncattr('reinitialization_step'), vt.bias, color=ct[gname],  label=gname, ax=ax3)
+            vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
         ax1.legend(loc='lower right',fontsize='small')
         ax1.set_ylabel('MAE ['+units+']')
         ax2.set_ylabel('RMSE ['+units+']')
@@ -247,7 +250,7 @@ for station, parameters in locations.iteritems():
                 continue
             ax.plot(time, Nobs,'.', label='observation #'+str(obsnum),lw=1)
         for gname, var in modeldata.iteritems():
-            ax.plot(time, var[0],'--', label=gname, lw=2)
+            ax.plot(time, var[0],'--', color=ct[gname], label=gname, lw=2)
     ax1.legend(fontsize='x-small')
     ax2.legend(fontsize='x-small')
     ax3.legend(fontsize='x-small')
