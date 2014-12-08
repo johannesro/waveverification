@@ -355,13 +355,13 @@ def subjectiveforecast(runtime, station, varlist):
     for var in varlist:
 # fetch all forcasts of the variable at given valid time as function of forecast time
         #print('read from quba')
-        cquba.execute("select valid,value from subjective where run = \""+runstr+"\" and stationid="+staid+" and pindexid = "+str(varid[var]))
+        cquba.execute("select valid,value from subjective where levelid=0 and run = \""+runstr+"\" and stationid="+staid+" and pindexid = "+str(varid[var]))
         x1 = cquba.fetchall()
         ftime1 = [ x1[i][0] for i in range(len(x1))] # 
         value1 = [ x1[i][1] for i in range(len(x1))] # 
 
         #print('read from qhis')
-        cqhis.execute("select valid,value from subjective where run = \""+runstr+"\" and stationid="+staid+" and pindexid = "+str(varid[var]))
+        cqhis.execute("select valid,value from subjective where levelid=0 and run = \""+runstr+"\" and stationid="+staid+" and pindexid = "+str(varid[var]))
         x2 = cqhis.fetchall()
         ftime2 = [ x2[i][0] for i in range(len(x2))] # 
         value2 = [ x2[i][1] for i in range(len(x2))] # 
