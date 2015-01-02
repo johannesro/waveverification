@@ -47,7 +47,7 @@ def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0
     ax1.legend(loc='lower right',fontsize='small')          
     obsq = sp.stats.mstats.mquantiles(finite(obsc),prob=prob)
     varq = sp.stats.mstats.mquantiles(finite(varc),prob=prob)
-    ax2.plot(obsq, varq, 'o', color=color, label=label)
+    ax2.plot(obsq, varq, 'x',ms=5,mew=2, color=color, label=label)
     ax2.plot([minval,maxval],[minval,maxval],'-r')
     ax2.set_ylabel('model')
     ax2.set_xlabel('observation')

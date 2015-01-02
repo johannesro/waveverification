@@ -24,7 +24,8 @@ else:
         timep = sys.argv[1]
     else:
         now = dt.datetime.now()
-        timep = str(now.year)+str(now.month)
+        #timep = str(now.year)+str(now.month)
+        timep = now.strftime('%Y%m')
 
 if len(timep)==6:
     month = timep[4:6]

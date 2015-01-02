@@ -33,6 +33,24 @@ locations = {'ekofisk':     [56.54, 3.21],
             'visund':       [61.37, 2.46]} # 4 1 
 #            'heidrun':      [65.32, 7.32]}
 
+locations2 = {'ekofisk':     [56.54, 3.21],
+            'asgardb':      [65.11 ,6.79],
+            'gjoa':         [61.33 , 3.9],
+            'huldra':       [60.87, 2.65], # 2 2 - 
+            'kristin':      [65.00, 6.55], # 2 2 2 
+            'kvitebjorn':   [61.08, 2.49], # 2 2 1 
+#            'njorda':       [64.27, 7.20], # 3 3 1 
+            'ormenlange':   [63.38, 5.31], # 2 2 1 
+#            'osebergsyd':   [60.40, 2.80], # 3 2 1 
+            'sleipner':     [58.37, 1.91], # 4 4 2 
+            'trollb':       [60.77, 3.50], # 3 3 - 
+            'ula':          [57.10 ,2.85], # 3 3 1 
+            'valhall':      [56.28, 3.39], # 5 5 2 
+            'veslefrikka':  [60.78, 2.89], # 1 1 1 
+            'veslefrikkb':  [60.78, 2.90]} # 2 2 2 
+
+
+
 WMsensors = {'ekofisk':     ['waverider', 'laser altimeter', 'RangeFinder'],
             'gullfaksc':    [],
             'asgardb':      [],
