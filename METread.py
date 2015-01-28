@@ -209,7 +209,6 @@ def MWAM10_modrun(location, run, varnamelist, step=1):
     if os.path.isfile(filename):
         MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
         datadict = {'time': MWdatadict['time']}
-        print MWdatadict['Hs']
         for varname, MWAMname in MWAMvardict.iteritems():
             datadict.update({varname: MWdatadict[MWAMname]})
     else:
