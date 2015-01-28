@@ -28,8 +28,9 @@ import MySQLdb
 
 
 # variable list for ECMWF netcdf files
+# should better list these names in variables.py!
 ECvardict ={ 'Hs':  'swh', 'Tp':  'pp1d', 'Tm02': 'mp2', 'DDM': 'mwd', 'Hs_s': 'shts', 'Tm02_s': 'p2ps', 'DDM_s': 'mdts', 'FF': 'wind'}
-MWAMvardict = { 'Hs':  'hs', 'Tp':  'tp', 'Tm02': 'tm2', 'DDM': 'thq', 'Hs_s': 'hs_swell', 'Tm02_s': 'tm2_swell', 'DDM_s': 'thw_swell', 'FF': 'ff'}
+MWAMvardict = { 'Hs':  'hs', 'Tp':  'tp', 'Tp_s': 'tp_swell', 'Tm02': 'tm2', 'DDM': 'thq', 'Hs_s': 'hs_swell', 'Tm02_s': 'tm2_swell', 'DDM_s': 'thw_swell', 'FF': 'ff', 'DD': 'dd'}
 WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
@@ -191,7 +192,7 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
            datadict.update({varname: nan})
     return datadict
 
-def MWAM_modrun(location, run, varnamelist, step=1):
+def MWAM10_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
     run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
@@ -199,11 +200,18 @@ def MWAM_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename=run.strftime("/opdata/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
+    filename = run.strftime("/opdata/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
+    gfile = nc4.Dataset('/disk4/waveverification/WAM10grid.nc')
+    lat, lon = gfile.variables['latitude'][:], gfile.variables['longitude'][:]
+    gfile.close()
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        datadict = nctimeseries(filename, MWAMvardict.values(), location)
+        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
+        datadict = {'time': MWdatadict['time']}
+        print MWdatadict['Hs']
+        for varname, MWAMname in MWAMvardict.iteritems():
+            datadict.update({varname: MWdatadict[MWAMname]})
     else:
        print('file '+filename+' does not exist; returning missing values')
        nan = sp.ones(67)*sp.nan
@@ -237,7 +245,7 @@ def Nordic4_stormsurge_modrun(location, run, varnamelist, step=1):
 
 
 
-def nctimeseries(filename, varnamelist, coordinate):
+def nctimeseries(filename, varnamelist, coordinate, grid=None):
     '''
     Extract time series from the nearest model point at given coordinate from netCDF file
     attempts to read all variables in varnamelist. Returns None if a variable doesnt exist
@@ -252,12 +260,15 @@ def nctimeseries(filename, varnamelist, coordinate):
         nc = filename
     nctime = nc.variables['time'] # use this if we're dealing with single netcdf file
     time = nc4.num2date(nctime[:], units=nctime.units)
-    try: 
-        lon = nc.variables['longitude'][:]
-        lat = nc.variables['latitude'][:]
-    except KeyError:
-        lon = nc.variables['lon'][:]
-        lat = nc.variables['lat'][:]
+    if grid==None:
+        try: 
+            lon = nc.variables['longitude'][:]
+            lat = nc.variables['latitude'][:]
+        except KeyError:
+            lon = nc.variables['lon'][:]
+            lat = nc.variables['lat'][:]
+    else:
+        lat,lon = grid[0], grid[1]
     try: # use this for generic grids that provide full lon and lat arrays
         y,x = find_pos(lon, lat, lon0, lat0)
     except ValueError:  # use this if we have a lonlat grid with lon and lat vector
