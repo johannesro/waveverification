@@ -19,12 +19,18 @@
 import numpy as np
 import numpy.ma as ma
 import scipy as sp
+import scipy.spatial as spatial
+import scipy.interpolate as interpolate
 import datetime as dt
 import scipy.ndimage as nd
 import os
 import d22 # modlue for reading .d22 files from offshore stations
 import netCDF4 as nc4 #import Dataset, num2date, date2num
 import MySQLdb
+import dataanalysis as da
+import pylab as pl
+from mpl_toolkits.basemap import Basemap #package for map projection
+
 
 
 # variable list for ECMWF netcdf files
@@ -192,7 +198,7 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
            datadict.update({varname: nan})
     return datadict
 
-def MWAM10_modrun(location, run, varnamelist, step=1):
+def MWAM4_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
     run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
@@ -200,7 +206,7 @@ def MWAM10_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename = run.strftime("/opdata/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
+    filename = run.strftime("/opdata/wave/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
     gfile = nc4.Dataset('/disk4/waveverification/WAM10grid.nc')
     lat, lon = gfile.variables['latitude'][:], gfile.variables['longitude'][:]
     gfile.close()
@@ -435,5 +441,247 @@ def nctimeseries(filename, varnamelist, coordinate):
     return data
 
 '''
+
+
+def north_direction(lat):
+    '''get the north direction relative to image positive y coordinate'''
+    dlatdx = nd.filters.sobel(lat,axis=1,mode='constant',cval=sp.nan) #gradient in x-direction
+    dlatdy = nd.filters.sobel(lat,axis=0,mode='constant',cval=sp.nan)
+    ydir = lat[-1,0] -lat[0,0] # check if latitude is ascending or descending in y axis
+    # same step might have to be done with x direction.
+    return sp.arctan2(dlatdx,dlatdy*sp.sign(ydir) )*180/sp.pi
+
+def rotate_wind(U,V,alpha):
+    alpha = sp.array(alpha)*sp.pi/180
+    alpha = alpha.flatten()
+    R = sp.array([[sp.cos(alpha), -sp.sin(alpha)], [sp.sin(alpha), sp.cos(alpha)] ])
+    shpe = U.shape
+    origwind = sp.array((U.flatten(), V.flatten()))
+    if len(R.shape)==2:
+        rotwind = dot(R, origwind) # for constant rotation angle
+    else:
+        # for rotation angle given as array with same dimensions as U and V:
+        # k-loop with rotwind(k) = dot(R(i,j,k), origwind(j,k)) (einstein summation indices)
+        rotwind = sp.einsum("ijk,ik -> jk", R, origwind) 
+    Urot ,Vrot = rotwind[0,:], rotwind[1,:]
+    Urot = Urot.reshape(shpe)
+    Vrot = Vrot.reshape(shpe)
+    return Urot, Vrot
+
+
+class ncfile():
+    '''
+    Class to handle netcdf files with geophysical fields
+    '''
+    def __init__(self,filename):
+        try:
+            self.nc = nc4.Dataset(filename, 'r') # do only if not already opened
+        except RuntimeError:
+            self.nc = nc4.MFDataset(filename, 'r')
+        except TypeError:
+            self.nc = filename
+        nctime = self.nc.variables['time'] # use this if we're dealing with single netcdf file
+        self.time = nc4.num2date(nctime[:], units=nctime.units)
+        try: 
+            self.lon = self.nc.variables['longitude'][:]
+            self.lat = self.nc.variables['latitude'][:]
+        except KeyError:
+            self.lon = self.nc.variables['lon'][:]
+            self.lat = self.nc.variables['lat'][:]
+        self.spatial=False
+    def __repr__(self):
+        print 'advanced nc file interface by johannesro@met.no'
+        #print self.nc
+        ostr = 'lon: '+ str(self.lon.min()) + ' ' + str(self.lon.max()) +'\n'
+        ostr = ostr + 'lat: '+ str(self.lat.min()) + ' ' + str(self.lat.max()) +'\n'
+        ostr = ostr + 'time: ' + str(self.time[0]) +' - '+ str(self.time[-1])
+        return ostr
+    def close(self):
+        self.nc.close()
+    def field(self, timestep, varname):
+        '''
+        extract field at timestep
+        '''
+        timei = da.find_pos1d1(pl.date2num(self.time),pl.date2num(timestep))
+        return self.nc.variables[varname][timei]
+    def uv(self, timestep):
+        '''
+        extract u and v components as eastern/northern components; as fields at timestep
+        '''
+        northdir = north_direction(self.lat)
+        self.northdir= northdir
+        try:
+            u_grid = self.field(timestep, 'Uwind')
+            v_grid = self.field(timestep, 'Vwind')
+        except KeyError:
+            try:
+                u_grid = self.field(timestep, 'x_wind')
+                v_grid = self.field(timestep, 'y_wind')
+            except KeyError:
+                u_grid = self.field(timestep, '10u')
+                v_grid = self.field(timestep, '10v')
+        u,v = rotate_wind(u_grid,v_grid,northdir)
+        return u,v 
+    def trajectory(self,lon, lat, time, varnamelist,interpolate=True):
+        '''
+        pick selected variables (provided as list of strings) along a trajectory (given by lon, lat, time)
+        '''
+        result = {}
+        for varname in varnamelist:
+            result.update({varname:sp.zeros_like(lon)})
+        if self.spatial==False:
+            self.initiatespatial()
+        x0,y0 = self.pMap(lon, lat)
+        points = zip(x0,y0) # points in trajectory           #### xy order!
+        d,p = self.Tree.query(points,k=1) #nearest point, gives distance and point index
+        for i in range(len(time)):
+            timei = findtime(self.time, time[i])
+            xi, yi = self.xip[p[i]], self.etap[p[i]] # get grid indices 
+            #select variables
+            for varname in varnamelist:
+                var = self.nc.variables[varname]
+                if interpolate==True:
+                    try:
+                        yis, xis, timeis = slice(yi-1,yi+2), slice(xi-1,xi+2), slice(timei-1,timei+2)
+                        values = var[timeis,yis,xis] # select 3x3x3 box around closest value  #####xy order!
+                        # space-interplote each time slice
+                        valuet = []
+                        for ii in range(3):
+                            valuet.append(int_point(self.y[yis,xis], self.x[yis,xis], values[ii], y0[i], x0[i]))
+                        # time interpolation 
+                        # value = int_time(self.time[timeis], sp.array(valuet), time[i])
+                        value = np.interp(pl.date2num(time[i]), pl.date2num(self.time[timeis]), sp.array(valuet))
+                    except IndexError:
+                        value = var[timei,yi,xi]
+                        print('Warning: closest point is located on edge of model domain!')
+                else:
+                    value = var[timei,yi,xi]
+                result[varname][i]=value
+        return result
+    def initiatespatial(self):
+        self.spatial=True
+        self.pMap = Basemap(projection='stere',lat_0=68.0,lon_0=15.0,llcrnrlon=3.,llcrnrlat=60.3,urcrnrlon=47.0,urcrnrlat=71.,resolution='c')
+        self.x, self.y = self.pMap(self.lon, self.lat)
+        XI,ETA = sp.meshgrid(range(self.y.shape[1]),range(self.y.shape[0]))
+        self.xip, self.etap = XI.ravel(), ETA.ravel()
+        self.Tree = spatial.KDTree(zip(self.x.ravel(), self.y.ravel()))
+    def timeseries(filename, varnamelist, coordinate):
+        '''
+        Extract field at time step from netCDF file
+        attempts to read all variables in varnamelist. Returns None if a variable doesnt exist
+        coordinate: tuple of (lat, lon)
+        varnamelist: list of strings, i.e. ['x_wind_10m', 'y_wind_10m']
+        returns a dictionary containing the time series of each variable as well as time list
+        '''
+        time = lat0, lon0 = coordinate[0], coordinate[1]
+        try: # use this for generic grids that provide full lon and lat arrays
+            y,x = find_pos(lon, lat, lon0, lat0)
+        except ValueError:  # use this if we have a lonlat grid with lon and lat vector
+            x = find_pos1d1(lon, lon0)
+            y = find_pos1d1(lat, lat0)
+        data = {'time':time}
+        for var in varnamelist:
+            try:
+                if len(nc.variables[var].shape) == 3:
+                    data[var] = nc.variables[var][:,y,x]
+                if len(nc.variables[var].shape) == 4:
+                    data[var] = nc.variables[var][:,0,y,x]
+            except KeyError:
+                data[var] = None
+        # check for alternative varnames 
+        varnames = {'hs':'Hs', 'tp':'Tp', 'ff':'FF', 'dd':'DD', 'tm2':'Tm02', 'thq':'DDM', 'significant_wave_height':'Hs', 'wind_speed_10m':'FF'}
+        for altname,varname in varnames.iteritems():
+            try:
+                data[varname]=data[altname]
+            except KeyError:
+                continue
+        return data
+
+class Nora10file(ncfile):
+    '''
+    Class to handle Nora10 netcdf files that don't include longitute/latitde fields
+    '''
+    def __init__(self,filename):
+        try:
+            self.nc = nc4.Dataset(filename, 'r') # do only if not already opened
+        except RuntimeError:
+            self.nc = nc4.MFDataset(filename, 'r')
+        except TypeError:
+            self.nc = filename
+        nctime = self.nc.variables['time'] # use this if we're dealing with single netcdf file
+        self.time = nc4.num2date(nctime[:], units=nctime.units)
+        gridf = nc4.Dataset('/home/johannesro/Nora10/grid/Nora10grid.nc','r')
+        self.lon = gridf.variables['longitude'][:]
+        self.lat = gridf.variables['latitude'][:]
+        self.spatial = False
+    def uv(self, timestep):
+        '''
+        extract u and v components as eastern/northern components; as fields at timestep
+        '''
+        #northdir = north_direction(self.lat)
+        #self.northdir= northdir
+        try:
+            u = self.field(timestep, 'Uwind')
+            v = self.field(timestep, 'Vwind')
+        except KeyError:
+            try:
+                u = self.field(timestep, 'x_wind')
+                v = self.field(timestep, 'y_wind')
+            except KeyError:
+                u = self.field(timestep, '10u')
+                v = self.field(timestep, '10v')
+        #print 'wind not rotated'
+        return u,v 
+
+
+def int_point_m(lonfield,latfield,field,lon,lat,Imap):
+    '''use the LinearNDInterpolater to interpolate one point in a field
+
+    lonfield, latfield: coordinates of field
+    field: 2d-field of values
+    lon, lat: point to which field is interpolated
+    Imap: basemap instance
+    '''
+    # get coordinates to cartesian coordinate system
+    xfield,yfield = Imap(lonfield, latfield) 
+    x,y = Imap(lon,lat)
+    # do the interpolation (first define points for interpolation
+    points = sp.array( [xfield.flatten(), yfield.flatten()] ).transpose()
+    I = interpolate.LinearNDInterpolator(points,field.flatten())
+    return I(x, y)
+
+def int_point(xfield,yfield,field,x,y):
+    '''use the LinearNDInterpolater to interpolate one point in a field
+    '''
+    points = sp.array( [xfield.flatten(), yfield.flatten()] ).transpose()
+    I = interpolate.LinearNDInterpolator(points,field.flatten())
+    return I(x, y)
+
+def int2_time(time, y, time_0):
+    f = interpolate.interp1d(pl.date2num(time), y, kind='linear')
+#    print time, time_0
+    return f(pl.date2num(time_0))
+
+def int_time(time, y, time_0):
+    #print time, time_0
+    return np.interp(pl.date2num(time_0), pl.date2num(time), y)
+
+
+def findtime(time,time0):
+    i = da.find_pos1d1(pl.date2num(time),pl.date2num(time0))
+    return i
+
+def gsplitread(station):
+    '''read Nora10 data from gsplit files for a given station name'''
+    f = '/home/johannesro/WAM_NORA10/gsplit_'+station+'.txt'
+    data = pl.loadtxt(f, skiprows=4).transpose()
+    dd={}
+    dd['time'] = [dt.datetime(int(data[0,i]), int(data[1,i]), int(data[2,i]), int(data[3,i]), 0, 0) for i in range(data.shape[1])]
+    dd['Hs'] = data[6]
+    dd['Tp'] = data[7]
+    dd['FF'] = data[4]
+    dd['DDM'] = data[10]
+    dd['Tm02'] = data[8] 
+    return dd
 
 
