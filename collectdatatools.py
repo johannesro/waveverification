@@ -18,7 +18,7 @@ nleadtimes12 = int(sp.ceil(1.0*modlength/12))
 nleadtimes24 = int(sp.ceil(1.0*modlength/24))
 subjlist = ['ekofiskL', 'ekofisk', 'draugen', 'valhall', 'oseberg', 'osebergc']
 subj_reinitime = {'ekofiskL':6, 'ekofisk':6, 'draugen':12, 'valhall':12, 'oseberg':12, 'osebergc':12}
-reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM10':12, 'WAMAROME2W':24, 'WAMAROME1W':24}
+reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM4':12, 'MWAM10':12, 'WAMAROME2W':24, 'WAMAROME1W':24}
 
 class validationfile():
     '''

@@ -30,7 +30,7 @@ import MySQLdb
 import dataanalysis as da
 import pylab as pl
 from mpl_toolkits.basemap import Basemap #package for map projection
-
+#import sphrot
 
 
 # variable list for ECMWF netcdf files
@@ -207,13 +207,16 @@ def MWAM4_modrun(location, run, varnamelist, step=1):
     location = list(location)
     # check file, preferably from opdata
     filename = run.strftime("/opdata/wave/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
-    gfile = nc4.Dataset('/disk4/waveverification/WAM10grid.nc')
-    lat, lon = gfile.variables['latitude'][:], gfile.variables['longitude'][:]
+    if not os.path.isfile(filename):
+        filename = run.strftime("/vol/hindcast3/johannesro/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
+    gfile = nc4.Dataset('/opdata/wave/MyWave_wam4_WAVE00.nc') #this step could later be droppet, as lat/lon info are now available in new files
+    lat, lon = gfile.variables['truelat'][:], gfile.variables['truelon'][:]
     gfile.close()
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
         MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
+        #print MWdatadict
         datadict = {'time': MWdatadict['time']}
         for varname, MWAMname in MWAMvardict.iteritems():
             datadict.update({varname: MWdatadict[MWAMname]})
@@ -287,6 +290,7 @@ def nctimeseries(filename, varnamelist, coordinate, grid=None):
             if len(nc.variables[var].shape) == 4:
                 data[var] = nc.variables[var][:,0,y,x]
         except KeyError:
+            print 'no variable '+var+'in file '+filename
             data[var] = None
     # check for alternative varnames 
     varnames = {'hs':'Hs', 'tp':'Tp', 'ff':'FF', 'dd':'DD', 'tm2':'Tm02', 'thq':'DDM', 'significant_wave_height':'Hs', 'wind_speed_10m':'FF'}
