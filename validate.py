@@ -46,7 +46,7 @@ print(t1, t2)
 # plotpath
 ppath = '/disk4/waveverification/'+timep+'/'
 # set color table for models
-ct = {'Subjective': 'r', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'g', 'HIRLAM8': 'y', 'MWAM10':'b' }
+ct = {'Subjective': 'r', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'g', 'HIRLAM8': 'y', 'MWAM4':'b' }
 
 def select_var_from_models(G,varname):
     modeldata={}
