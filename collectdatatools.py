@@ -203,7 +203,6 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
                         try:
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
                         except ValueError:
-                            print modstart, fstep, ncstart, ncend, modend
                             ncend = ncstart + data[varname][modstart+mo:modend+mo].shape[0]
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
     return 0
