@@ -34,6 +34,7 @@ MWAM4 = {'Hs':  ['significant wave height','m','hs'],
                'FF':['wind speed','m/s','ff'],
                'DD':['wind direction','degree','dd','oceanographic']} 
 
+MWAM10 = MWAM4
 
 
 
