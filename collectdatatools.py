@@ -164,6 +164,7 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
 
     year, month: collect during this month
     sday: day of month where to start collection
+    fstep: number of hours between each model reinitialization
     ''' 
     forecasttimes = range(0,24,fstep)
     nleadtimes = int(sp.ceil(1.0*modlength/fstep))
@@ -186,6 +187,11 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
             modrun = dt.datetime(cyear,cmonth,cday+1,hour) # get initialization time of model run
             # time series from the model with the given initialization time
             data = modelreader(location, modrun, ncgroup.keys()) # This reader should be universal for each model! (variable list not yet used as parameter)
+            try:
+                modoffset = modrun-data['time'][0] #check at which hour the model output starts. Assume hourly output thereafter!
+            except TypeError:
+                continue
+            mo = int(modoffset.total_seconds()/3600.) # get number of hours
             # cut the time series into 6 (or 12) hour long pieces and put each piece into the netcdf file according to forecast lead time
             for modstart in range(0, modlength, fstep): # loop over fstep-hour long pieces of model data (Lead Time)
                 ncoffset = day*24+hour # time offset of the data in the new netcdf file
@@ -195,10 +201,11 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
                 if not (ncstart < 0 or ncend > daysofmonth*24-1) :
                     for varname, ncid in ncgroup.iteritems():
                         try:
-                            ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart:modend]
+                            ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
                         except ValueError:
-                            ncend = ncstart + data[varname][modstart:modend].shape[0]
-                            ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart:modend]
+                            print modstart, fstep, ncstart, ncend, modend
+                            ncend = ncstart + data[varname][modstart+mo:modend+mo].shape[0]
+                            ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
     return 0
 
 
