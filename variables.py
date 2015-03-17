@@ -21,7 +21,7 @@ WAM4 = {'Hs':  ['significant wave height','m',200],
 
 WAM10 = WAM4
 
-MWAM10 = {'Hs':  ['significant wave height','m','hs'],
+MWAM4 = {'Hs':  ['significant wave height','m','hs'],
                'Tp':  ['peak period','s','tp'],
                'Tm02':['mean period','s','tm2'],
 #               'DDP': ['peak direction','degree',203,'oceanographic'],
