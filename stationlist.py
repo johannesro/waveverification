@@ -8,7 +8,7 @@ locations = {'ekofisk':     [56.54, 3.21],
             'gjoa':         [61.33 , 3.9],
             'grane':        [59.17, 2.48], # 2 2 1 
             'heimdal':      [59.57, 2.23], # 2 2 1 
-            'huldra':       [60.87, 2.65], # 2 2 - 
+#            'huldra':       [60.87, 2.65], # 2 2 - 
             'kristin':      [65.00, 6.55], # 2 2 2 
             'kvitebjorn':   [61.08, 2.49], # 2 2 1 
 #            'njorda':       [64.27, 7.20], # 3 3 1 
@@ -83,7 +83,7 @@ WMsensors = {'ekofisk':     ['waverider', 'laser altimeter', 'RangeFinder'],
             'visund':       [], # 4 1 
             'heidrun':      []}
 
-bestWMsensor = {'ekofisk':  0, # python indexing!
+bestWMsensor = {'ekofisk':  2, # python indexing!
             'draugen':      1,
             'kristin':      1,
             'norne':        0,
