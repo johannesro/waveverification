@@ -1,4 +1,5 @@
-testlocations = {'gullfaksc':    [61.20, 2.27]}
+testlocations = {'draugen':      [64.35 ,7.78],
+                 'gullfaksc':    [61.20, 2.27]}
 
 newlocations = {#'ekofisk':     [56.54, 3.21],
             #'ekofiskL':    [56.54, 3.21],

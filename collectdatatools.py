@@ -133,10 +133,14 @@ class validationfile():
             ncObj.reinitialization_step = 6
             gObj = {'Hs': ncObj.createVariable('Hs', sp.float32, dimensions=('lead_time6h','time')),
                    'Tp': ncObj.createVariable('Tp', sp.float32, dimensions=('lead_time6h','time')),
-                   'FF': ncObj.createVariable('FF', sp.float32, dimensions=('lead_time6h','time'))}
+                   'Tm02': ncObj.createVariable('Tm02', sp.float32, dimensions=('lead_time6h','time')),
+                   'FF': ncObj.createVariable('FF', sp.float32, dimensions=('lead_time6h','time')),
+                   'DD': ncObj.createVariable('DD', sp.float32, dimensions=('lead_time6h','time'))}
             gObj['Hs'].units = 'm'
             gObj['Tp'].units = 's'
+            gObj['Tm02'].units = 's'
             gObj['FF'].units = 'm/s'
+            gObj['DD'].units = 'degree'
     def get_subjective(self):
         '''
         Check if the subjective  group exists, if not create it. 

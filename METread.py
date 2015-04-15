@@ -106,11 +106,11 @@ def WAMAROME2W_modrun(location, run, varnamelist, step=1):
     location = list(location)
     #varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
     # check file, preferably from opdata
-    filename=run.strftime("/vol/fou/atmos/jakobks/WAM/WAM_Coupled2W/netcdf/WAM_2WCoupled_%Y%m%d.nc")
+    filename=run.strftime("/vol/fou/atmos2/jakobks/MyWave/WAM_2WCoupled/WAM_2WCoupled_%Y%m%d00.nc")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        datadict = nctimeseries(filename, varnamelist, location)
+        #datadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
         WAdatadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
         datadict = {'time':WAdatadict['time']}
         for varname, WAname in WAMAROMEvardict.iteritems():
@@ -131,11 +131,11 @@ def WAMAROME1W_modrun(location, run, varnamelist, step=1):
     location = list(location)
     #varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
     # check file, preferably from opdata
-    filename=run.strftime("/vol/fou/atmos/jakobks/WAM/WAM_Coupled1W/netcdf/WAM_1WCoupled_%Y%m%d.nc")
+    filename=run.strftime("/vol/fou/atmos2/jakobks/MyWave/WAM_1WCoupled/WAM_1WCoupled_%Y%m%d00.nc")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        datadict = nctimeseries(filename, varnamelist, location)
+        #datadict = nctimeseries(filename, varnamelist, location)
         WAdatadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
         datadict = {'time':WAdatadict['time']}
         for varname, WAname in WAMAROMEvardict.iteritems():
