@@ -29,3 +29,7 @@ cd /disk4/waveverification/website
 cd /disk4/waveverification
 ./upload.sh
 
+# secure data on hindcast disk
+cd /metno/hindcast3/johannesro/waveverification
+rsync -ua /disk4/waveverification/data .
+chmod 755 -R data
