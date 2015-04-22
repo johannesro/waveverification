@@ -141,6 +141,7 @@ class validationfile():
             gObj['Tm02'].units = 's'
             gObj['FF'].units = 'm/s'
             gObj['DD'].units = 'degree'
+            gObj['DD'].Convention = 'meteorological'
     def get_subjective(self):
         '''
         Check if the subjective  group exists, if not create it. 

@@ -58,9 +58,12 @@ def select_var_from_models(G,varname):
             var[var.mask==True]=sp.nan
             # check if we are dealing with directions and ensure meteorological convention
             if (G[gname].variables[varname].units[0:6] == 'degree'):
-                if (G[gname].variables[varname].Convention=='oceanographic'):
-                    var=var+180
-                    var[var>360.]=var[var>360.]-360.
+                try:
+                    if (G[gname].variables[varname].Convention=='oceanographic'):
+                        var=var+180
+                        var[var>360.]=var[var>360.]-360.
+                except AttributeError:
+                    var=var
         except KeyError:
             continue
         if sp.isnan(var[0]).all():
