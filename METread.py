@@ -36,7 +36,7 @@ from mpl_toolkits.basemap import Basemap #package for map projection
 # variable list for ECMWF netcdf files
 # should better list these names in variables.py!
 ECvardict ={ 'Hs':  'swh', 'Tp':  'pp1d', 'Tm02': 'mp2', 'DDM': 'mwd', 'Hs_s': 'shts', 'Tm02_s': 'p2ps', 'DDM_s': 'mdts', 'FF': 'wind'}
-MWAMvardict = { 'Hs':  'hs', 'Tp':  'tp', 'Tp_s': 'tp_swell', 'Tm02': 'tm2', 'DDM': 'thq', 'Hs_s': 'hs_swell', 'Tm02_s': 'tm2_swell', 'DDM_s': 'thw_swell', 'FF': 'ff', 'DD': 'dd'}
+MWAMvardict = { 'Hs':  'hs_sea', 'Tp':  'tp_sea', 'Tp_s': 'tp_swell', 'Tm02': 'tm2_sea', 'DDM': 'thq_sea', 'Hs_s': 'hs_swell', 'Tm02_s': 'tm2_swell', 'DDM_s': 'thq_swell', 'FF': 'ff', 'DD': 'dd'}
 WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
