@@ -21,11 +21,11 @@ WAM4 = {'Hs':  ['significant wave height','m',200],
 
 WAM10 = WAM4
 
-MWAM4 = {'Hs':  ['significant wave height','m','hs_sea'],
-               'Tp':  ['peak period','s','tp_sea'],
-               'Tm02':['mean period','s','tm2_sea'],
+MWAM4 = {'Hs':  ['significant wave height','m','hs'],
+               'Tp':  ['peak period','s','tp'],
+               'Tm02':['mean period','s','tm2'],
 #               'DDP': ['peak direction','degree',203,'oceanographic'],
-               'DDM': ['mean direction','degree','thq_sea','oceanographic'],
+               'DDM': ['mean direction','degree','thq','oceanographic'],
                'Hs_s':['swell significant wave height','m','hs_swell'],
                'Tp_s':['swell peak period','s', 'tp_swell'],
                'Tm02_s':['swell mean period','s','tm2_swell'],
