@@ -31,7 +31,7 @@ import collectdatatools as cdt
 
 collectsubjective = True
 collectobservation = True
-models = ['WAM10', 'WAM4', 'HIRLAM8', 'AROME', 'MWAM4', 'MWAM10']
+models = ['WAM10', 'WAM4', 'HIRLAM8', 'AROME', 'MWAM4', 'EXP']
 
 # 
 # get parameters from calling script/user:

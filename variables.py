@@ -34,9 +34,19 @@ MWAM4 = {'Hs':  ['significant wave height','m','hs'],
                'FF':['wind speed','m/s','ff'],
                'DD':['wind direction','degree','dd','oceanographic']} 
 
-MWAM10 = MWAM4
-
-
+#MWAM10 = MWAM4
+EXP = {'Hs':  ['significant wave height','m','hs'],
+               'Tp':  ['peak period','s','tp'],
+               'Tm02':['mean period','s','tm2'],
+#               'DDP': ['peak direction','degree',203,'oceanographic'],
+               'DDM': ['mean direction','degree','thq','oceanographic'],
+               'Hs_s':['swell significant wave height','m','hs_swell'],
+               'Tp_s':['swell peak period','s', 'tp_swell'],
+               'Tm02_s':['swell mean period','s','tm2_swell'],
+#               'DDP_s':['swell peak direction','degree',222,'oceanographic'],
+               'DDM_s':['swell mean direction','degree','thq_swell','oceanographic'],
+               'FF':['wind speed','m/s','ff'],
+               'DD':['wind direction','degree','dd','oceanographic']} 
 
 ECWAM =    {'Hs':  ['significant wave height','m','swh'],
                'Tp':  ['peak period','s','pp1d'],

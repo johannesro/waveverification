@@ -260,6 +260,35 @@ def MWAM4_modrun(location, run, varnamelist, step=1):
            datadict.update({varname: nan})
     return datadict
 
+def EXP_modrun(location, run, varnamelist, step=1):
+    '''
+    location: (lat, lon) touple or list
+    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
+    '''
+    # ensure correct formats
+    location = list(location)
+    # check file, preferably from opdata
+    filename = run.strftime("/opdata/wave_exp/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
+    gfile = nc4.Dataset('/opdata/wave/MyWave_wam4_WAVE00.nc') #this step could later be droppet, as lat/lon info are now available in new files
+    lat, lon = gfile.variables['truelat'][:], gfile.variables['truelon'][:]
+    gfile.close()
+    print(' ')
+    print('reading '+filename)
+    if os.path.isfile(filename):
+        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
+        #print MWdatadict
+        datadict = {'time': MWdatadict['time']}
+        for varname, MWAMname in MWAMvardict.iteritems():
+            datadict.update({varname: MWdatadict[MWAMname]})
+    else:
+       print('file '+filename+' does not exist; returning missing values')
+       nan = sp.ones(67)*sp.nan
+       datadict = {'time':nan}
+       for varname in MWAMvardict.keys():
+           datadict.update({varname: nan})
+    return datadict
+
+
 
 def Nordic4_stormsurge_modrun(location, run, varnamelist, step=1):
     '''
