@@ -71,10 +71,10 @@ def read_d22(station,start=None,end=None):
         except IOError:
             dy=pl.num2date(d).strftime("%Y/%Y%m%d")
             try:
-                 #print('try to read d22 from /starc...')
-                 f = open("/disk4/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")       
+                 #print('try to read d22 from hindcast...')
+                 f = open("/vol/hindcast3/waveverification/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")       
             except IOError:
-                #print('try to read d22 from /metno/hindcast3...')
+                #print('try to read d22 from starc')
                 try:
                     f = open("/starc/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")
                 except IOError:
