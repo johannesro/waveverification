@@ -17,7 +17,7 @@ import sys
 interactive=False
 
 if interactive:
-    timep='201411'
+    timep='201511'
     #timep='2013-2014'
 else:
     if len(sys.argv) > 1:
@@ -44,7 +44,7 @@ print('time: '+timestr)
 print(t1, t2)
 
 # plotpath
-ppath = '/disk4/waveverification/'+timep+'/'
+ppath = '/vol/hindcast3/waveverification/'+timep+'/'
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w'}
 
@@ -86,7 +86,7 @@ for station, parameters in locations.iteritems():
     print 'verification of station '+station+' for '+timep
 #
 # open file
-    path = '/disk4/waveverification/data'
+    path = '/vol/hindcast3/waveverification/data'
 #filename = starttime.strftime(station+'_201312.nc')
     filename = station+'_'+timep+'.nc'
     nc       = Dataset(os.path.join(path,filename),mode='r')

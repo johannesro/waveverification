@@ -32,7 +32,7 @@ def WAM4_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file
-    filename=run.strftime("/disk4/DNMI_WAVE/%Y/%m/%d/g4kmwave%H.dat_%Y%m%d")
+    filename=run.strftime("/vol/hindcast3/waveverification/DNMI_WAVE/%Y/%m/%d/g4kmwave%H.dat_%Y%m%d")
     if not os.path.exists(filename):
         filename=run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/g4kmwave%H.dat_%Y%m%d")
     print('reading '+filename)
@@ -88,7 +88,7 @@ def WAM10_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file
-    filename=run.strftime("/disk4/DNMI_WAVE/%Y/%m/%d/g10kmwave%H.dat_%Y%m%d")
+    filename=run.strftime("/vol/hindcast3/waveverification/DNMI_WAVE/%Y/%m/%d/g10kmwave%H.dat_%Y%m%d")
     if not os.path.exists(filename):
         filename=run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/g10kmwave%H.dat_%Y%m%d")
     print('reading '+filename)

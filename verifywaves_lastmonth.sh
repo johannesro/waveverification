@@ -31,6 +31,6 @@ cd /disk4/waveverification/website
 ./makeindex.sh $lyear $lmonth
 
 # upload webpage
-cd /disk4/waveverification
+cd /vol/hindcast3/waveverification
 ./upload.sh
 

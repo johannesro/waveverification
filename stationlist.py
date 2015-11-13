@@ -78,7 +78,7 @@ WMsensors = {'ekofisk':     ['waverider', 'laser altimeter', 'Mir. RangeFinder a
             'goliat':       []} 
 
 bestWMsensor = {'ekofiskL':  2, # python indexing!
-            'draugen':      1,
+            'draugen':      0,
             'kristin':      1,
             'norne':        0,
             'sleipner':     0,

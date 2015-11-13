@@ -65,7 +65,7 @@ else:
 print numdays
 print updatemode
 modlength = 67 # hours in each model run
-outpath = '/disk4/waveverification/data'
+outpath = '/vol/hindcast3/waveverification/data'
 
 # errors to be catched during processing:
 errlist = IOError, EOFError, KeyError, IndexError
