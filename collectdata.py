@@ -16,8 +16,8 @@ import numpy as np
 import netCDF4 as nc4 #import Dataset, num2date, date2num 
 import datetime as dt
 import calendar
-#import METread
-import METread_rpy as METread
+import METread
+#import METread_rpy as METread
 import pylab as pl
 import os
 import sys
@@ -31,7 +31,7 @@ import collectdatatools as cdt
 
 collectsubjective = True
 collectobservation = True
-models = ['WAM10', 'WAM4', 'HIRLAM8', 'AROME', 'MWAM4', 'EXP']
+models = ['AROME', 'MWAM4', 'EXP']
 
 # 
 # get parameters from calling script/user:
