@@ -240,15 +240,13 @@ def MWAM4_modrun(location, run, varnamelist, step=1):
     # check file, preferably from opdata
     filename = run.strftime("/opdata/wave/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
     if not os.path.isfile(filename):
-        filename = run.strftime("/vol/hindcast3/johannesro/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
-    gfile = nc4.Dataset('/opdata/wave/MyWave_wam4_WAVE00.nc') #this step could later be droppet, as lat/lon info are now available in new files
-    lat, lon = gfile.variables['truelat'][:], gfile.variables['truelon'][:]
-    gfile.close()
+        filename = run.strftime("/vol/hindcast3/waveverification/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
+    if not os.path.isfile(filename):
+        filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc_%Y%m%d")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
-        #print MWdatadict
+        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location)#, grid=(lat,lon))
         datadict = {'time': MWdatadict['time']}
         for varname, MWAMname in MWAMvardict.iteritems():
             datadict.update({varname: MWdatadict[MWAMname]})
@@ -269,13 +267,10 @@ def EXP_modrun(location, run, varnamelist, step=1):
     location = list(location)
     # check file, preferably from opdata
     filename = run.strftime("/opdata/wave_exp/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
-    gfile = nc4.Dataset('/opdata/wave/MyWave_wam4_WAVE00.nc') #this step could later be droppet, as lat/lon info are now available in new files
-    lat, lon = gfile.variables['truelat'][:], gfile.variables['truelon'][:]
-    gfile.close()
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
+        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location) #, grid=(lat,lon))
         #print MWdatadict
         datadict = {'time': MWdatadict['time']}
         for varname, MWAMname in MWAMvardict.iteritems():
