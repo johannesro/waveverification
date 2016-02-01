@@ -21,9 +21,6 @@ echo 'start wave verification script' >> wv.log
 
 # update webpage
 cd /vol/hindcast3/waveverification/website 
-#./makepage.sh $year $month
-#./makepage_DD.sh $year $month
-#./makeindex.sh $year $month
 
 # september is not working with the above commands because the shell misinterprets the lines !?
 #./makepage.sh $year 09

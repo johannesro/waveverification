@@ -1,9 +1,3 @@
-testlocations = {'draugen':      [64.35 ,7.78],
-                 'gullfaksc':    [61.20, 2.27]}
-
-newlocations = {'goliat':      [71.29, 22.32]}
-
-
 locations = {'ekofisk':     [56.54, 3.21],
             'ekofiskL':    [56.54, 3.21],
             'gullfaksc':    [61.20, 2.27],
@@ -41,6 +35,12 @@ locations = {'ekofisk':     [56.54, 3.21],
              'goliat':      [71.29, 22.32]}
 
 landegode =  {'landegode':    [67.56, 14.17]}
+
+testlocations = {'draugen':      [64.35 ,7.78],
+                 'gullfaksc':    [61.20, 2.27]}
+
+newlocations = {'goliat':      [71.29, 22.32]}
+
 
 WMsensors = {'ekofisk':     ['waverider', 'laser altimeter', 'Mir. RangeFinder altimeter'],
              'ekofiskL':    ['waverider', 'laser altimeter', 'Saab WaveRadar altimeter'],
@@ -83,7 +83,8 @@ bestWMsensor = {'ekofiskL':  2, # python indexing!
             'norne':        0,
             'sleipner':     0,
             'valhall':      1,
-            'veslefrikkb':  1}
+            'veslefrikkb':  1,
+            'goliat':       0}
 
 
 
