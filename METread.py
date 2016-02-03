@@ -418,10 +418,10 @@ def subjectiveforecast(runtime, station, varlist):
         #print('ekofisk=ekofisk_os')
         station='Ekofisk_OS'
 
-    quba = MySQLdb.connect(host="qubadb",user="qbload", passwd="load", db="quba",port=19100)
-    qhis = MySQLdb.connect(host="qubadb",user="qbload", passwd="load", db="qhist",port=19100)
+    quba = MySQLdb.connect(host="kommersiellqubadb",user="qbload", passwd="load", db="kommersiellquba")
+    #qhis = MySQLdb.connect(host="qubadb",user="qbload", passwd="load", db="qhist",port=19100)
     cquba = quba.cursor()
-    cqhis = qhis.cursor()
+    #cqhis = qhis.cursor()
     cquba.execute("select stationid from station where name like '"+station+"'")
     staid = str(cquba.fetchall()[0][0])
     #print('Station ID for '+station+': '+staid)
@@ -437,14 +437,14 @@ def subjectiveforecast(runtime, station, varlist):
         value1 = [ x1[i][1] for i in range(len(x1))] # 
 
         #print('read from qhis')
-        cqhis.execute("select valid,value from subjective where levelid=0 and run = \""+runstr+"\" and stationid="+staid+" and pindexid = "+str(varid[var]))
-        x2 = cqhis.fetchall()
-        ftime2 = [ x2[i][0] for i in range(len(x2))] # 
-        value2 = [ x2[i][1] for i in range(len(x2))] # 
+        #cqhis.execute("select valid,value from subjective where levelid=0 and run = \""+runstr+"\" and stationid="+staid+" and pindexid = "+str(varid[var]))
+        #x2 = cqhis.fetchall()
+        #ftime2 = [ x2[i][0] for i in range(len(x2))] # 
+        #value2 = [ x2[i][1] for i in range(len(x2))] # 
 
 # put data from quba and qhis together:
-        time = ftime2+ftime1
-        value = value2+value1
+        time = ftime1
+        value = value1
         vardict.update({var:(time,value)})
     return vardict
 
