@@ -17,24 +17,24 @@ echo 'start wave verification script' >> wv.log
 ./collectdata.py 
 
 # make plots
-#./validate.py
+./validate.py
 
 # update webpage
-#cd /vol/hindcast3/waveverification/website 
+cd /vol/hindcast3/waveverification/website 
 
 # september is not working with the above commands because the shell misinterprets the lines !?
 #./makepage.sh $year 09
 #./makepage_DD.sh $year 09
 #./makeindex.sh $year 09
 
-#./makepage.sh $year $month
-#./makepage_DD.sh $year $month
-#./makeindex.sh $year $month
+./makepage.sh $year $month
+./makepage_DD.sh $year $month
+./makeindex.sh $year $month
 
 
 # upload webpage
-#cd /vol/hindcast3/waveverification
-#./upload.sh
+cd /vol/hindcast3/waveverification
+./upload.sh
 
 # secure data on local pc
 #cd /disk4/waveverification/
