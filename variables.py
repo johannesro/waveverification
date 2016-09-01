@@ -35,6 +35,8 @@ MWAM4 = {'Hs':  ['significant wave height','m','hs'],
                'DD':['wind direction','degree','dd','oceanographic']} 
 
 #MWAM10 = MWAM4
+MWAM8 = MWAM4
+
 EXP = {'Hs':  ['significant wave height','m','hs'],
                'Tp':  ['peak period','s','tp'],
                'Tm02':['mean period','s','tm2'],

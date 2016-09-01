@@ -14,6 +14,8 @@ from stationlist import locations, WMsensors, bestWMsensor
 import sys
 #import calendar
 
+print("The Python version is %s.%s.%s" % sys.version_info[:3])
+
 interactive=False
 
 if interactive:
@@ -44,9 +46,11 @@ print('time: '+timestr)
 print(t1, t2)
 
 # plotpath
-ppath = '/vol/hindcast3/waveverification/'+timep+'/'
+#ppath = '/vol/hindcast3/waveverification/'+timep+'/'
+ppath = '/lustre/storeB/project/fou/hi/waveverification/'+timep+'/'
+
 # set color table for models
-ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w'}
+ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
 
 def select_var_from_models(G,varname):
     modeldata={}
@@ -86,11 +90,12 @@ for station, parameters in locations.iteritems():
     print 'verification of station '+station+' for '+timep
 #
 # open file
-    path = '/vol/hindcast3/waveverification/data'
+    #path = '/vol/hindcast3/waveverification/data'
+    path = '/lustre/storeB/project/fou/hi/waveverification/data'
 #filename = starttime.strftime(station+'_201312.nc')
     filename = station+'_'+timep+'.nc'
     nc       = Dataset(os.path.join(path,filename),mode='r')
-    time = num2date(nc.variables['time'],nc.variables['time'].units)
+    time = num2date(nc.variables['time'][:],nc.variables['time'].units)
     G = nc.groups
     OBS  = G['OBS_d22']
 

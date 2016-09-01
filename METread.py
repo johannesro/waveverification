@@ -82,10 +82,11 @@ def AROME_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
-    # check file, preferably from opdata
-    filename=run.strftime("/opdata/arome2_5_main/arome_metcoop_default2_5km_%Y%m%d_%H.nc")
+    # check file, preferably from opdata -> /vol/data from ppi!!!
+    filename=run.strftime("/vol/data/arome2_5_main/arome_metcoop_default2_5km_%Y%m%d_%H.nc")
     if not os.path.exists(filename):
-        filename=run.strftime("/starc/DNMI_AROME_METCOOP/%Y/%m/%d/AROME_MetCoOp_%H_DEF.nc_%Y%m%d")
+        filename=run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_AROME_METCOOP/%Y/%m/%d/AROME_MetCoOp_%H_DEF.nc_%Y%m%d")
+        #filename=run.strftime("/starc/DNMI_AROME_METCOOP/%Y/%m/%d/AROME_MetCoOp_%H_DEF.nc_%Y%m%d")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
@@ -206,10 +207,10 @@ def MWAM10_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename = run.strftime("/opdata/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
+    filename = run.strftime("/vol/data/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
     if not os.path.isfile(filename):
         filename = run.strftime("/vol/hindcast3/waveverification/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
-    gfile = nc4.Dataset('/vol/hindcast3/waveverification/WAM10grid.nc')  #this step could later be droppet, if lat/lon info are available in operational files
+    gfile = nc4.Dataset('/lustre/storeB/project/fou/hi/waveverification/WAM10grid.nc')  #this step could later be droppet, if lat/lon info are available in operational files
     lat, lon = gfile.variables['latitude'][:], gfile.variables['longitude'][:]
     gfile.close()
     print(' ')
@@ -238,11 +239,12 @@ def MWAM4_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename = run.strftime("/opdata/wave/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
+    filename = run.strftime("/vol/data/wave/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
     if not os.path.isfile(filename):
         filename = run.strftime("/vol/hindcast3/waveverification/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
     if not os.path.isfile(filename):
-        filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc_%Y%m%d")
+        #filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
+        filename = run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_WAVE/%Y/%m/%d/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
@@ -266,7 +268,7 @@ def EXP_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename = run.strftime("/opdata/wave_exp/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
+    filename = run.strftime("/vol/data/wave_exp/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
@@ -283,6 +285,35 @@ def EXP_modrun(location, run, varnamelist, step=1):
            datadict.update({varname: nan})
     return datadict
 
+#Include Copernicus Arctic wave model (Wam8)---------------------------------------------------------------
+def MWAM8_modrun(location, run, varnamelist, step=1):
+    '''
+    location: (lat, lon) touple or list
+    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
+    '''
+    # ensure correct formats
+    location = list(location)
+    # check file, preferably from opdata (from ppi: /vol/data/)
+    filename = run.strftime("/vol/data/wave/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
+    if not os.path.isfile(filename):
+        #filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
+        filename = run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
+    print(' ')
+    print('reading '+filename)
+    if os.path.isfile(filename):
+        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location)#, grid=(lat,lon))
+        datadict = {'time': MWdatadict['time']}
+        for varname, MWAMname in MWAMvardict.iteritems():
+            datadict.update({varname: MWdatadict[MWAMname]})
+    else:
+       print('file '+filename+' does not exist; returning missing values')
+       nan = sp.ones(67)*sp.nan
+       datadict = {'time':nan}
+       for varname in MWAMvardict.keys():
+           datadict.update({varname: nan})
+    return datadict
+
+
 
 
 def Nordic4_stormsurge_modrun(location, run, varnamelist, step=1):
@@ -294,7 +325,8 @@ def Nordic4_stormsurge_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename=run.strftime("/starc/DNMI_ROMS/%Y/%m/%d/Nordic-4km_stormsurge_%H.nc_%Y%m%d")
+    #filename=run.strftime("/starc/DNMI_ROMS/%Y/%m/%d/Nordic-4km_stormsurge_%H.nc_%Y%m%d")
+    filename=run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_ROMS/%Y/%m/%d/Nordic-4km_stormsurge_%H.nc_%Y%m%d")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):

@@ -12,13 +12,19 @@ from stationlist import testlocations as locations
 import collectdatatools as cdt
 import variables
 
-modlength = 67 # hours in each model run
-nleadtimes6 = int(sp.ceil(1.0*modlength/6))
-nleadtimes12 = int(sp.ceil(1.0*modlength/12))
-nleadtimes24 = int(sp.ceil(1.0*modlength/24))
+#modlength = 67 # hours in each model run
 subjlist = ['ekofiskL', 'ekofisk', 'draugen', 'valhall', 'oseberg', 'osebergc']
 subj_reinitime = {'ekofiskL':6, 'ekofisk':6, 'draugen':12, 'valhall':12, 'oseberg':12, 'osebergc':12}
-reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM4':12, 'EXP':12, 'WAMAROME2W':24, 'WAMAROME1W':24}
+reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM4':6, 'MWAM8':24, 'EXP':12, 'WAMAROME2W':24, 'WAMAROME1W':24}
+
+#modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':241, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
+
+nleadtimes6 = int(sp.ceil(1.0*67/6))
+nleadtimes12 = int(sp.ceil(1.0*67/12))
+nleadtimes24 = int(sp.ceil(1.0*241/24))
+
+def nleadtimes(ml, reini):
+    return 
 
 class validationfile():
     '''
@@ -38,7 +44,7 @@ class validationfile():
         else:
             print('open existing netcdf station file: '+os.path.join(path,filename))
             self.nc = nc4.Dataset(self.filename,mode='a',format='NETCDF4')
-        self.time = nc4.num2date(self.nc.variables['time'], self.nc.variables['time'].units)
+        self.time = nc4.num2date(self.nc.variables['time'][:], self.nc.variables['time'].units)
 #
     def create_file(self):
         nc      = nc4.Dataset(self.filename,mode='w',format='NETCDF4')
@@ -60,9 +66,9 @@ class validationfile():
         ncleadtime12 = nc.createVariable('lead_time12h',sp.int32, dimensions=('lead_time12h',))
         ncleadtime24 = nc.createVariable('lead_time24h',sp.int32, dimensions=('lead_time24h',))
 # add time to nc file
-        ncleadtime6[:] = range(0,modlength+1,6)
-        ncleadtime12[:] = range(0,modlength+1,12)
-        ncleadtime24[:] = range(0,modlength+1,24)
+        ncleadtime6[:] = range(0,67,6)
+        ncleadtime12[:] = range(0,67,12)
+        ncleadtime24[:] = range(0,241,24)
 
 # generate time for netcdf file
         nctime.units = 'seconds since 1970-01-01 00:00:00'

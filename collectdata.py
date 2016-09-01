@@ -29,9 +29,18 @@ import collectdatatools as cdt
 # user parameters
 #
 
+print("The Python version is %s.%s.%s" % sys.version_info[:3])
+
 collectsubjective = True
 collectobservation = True
-models = ['AROME', 'MWAM4', 'EXP']
+
+# which model to process
+models = ['AROME', 'MWAM4', 'EXP', 'MWAM8']
+
+# how may output time steps (usually in hours) in each model run
+modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':241, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
+
+
 
 # 
 # get parameters from calling script/user:
@@ -64,8 +73,9 @@ else:
 
 print numdays
 print updatemode
-modlength = 67 # hours in each model run
-outpath = '/vol/hindcast3/waveverification/data'
+#modlength = 67 # hours in each model run
+#outpath = '/vol/hindcast3/waveverification/data'
+outpath = '/lustre/storeB/project/fou/hi/waveverification/data'
 
 # errors to be catched during processing:
 errlist = IOError, EOFError, KeyError, IndexError
@@ -124,7 +134,7 @@ for station, coordinate in locations.iteritems():
 #
     if collectsubjective and station in cdt.subjlist:
         try:
-            cdt.collectsubjective(startyear, startmonth, stationstartday, gSubj, station, fstep=6, modlength=67, numdays=stationnumdays)
+            cdt.collectsubjective(startyear, startmonth, stationstartday, gSubj, station, fstep=6, numdays=stationnumdays)
         except errlist:
             print('subjective analysis not read')
         finally:
@@ -137,7 +147,8 @@ for station, coordinate in locations.iteritems():
         gmod = stafile.get_modelgroup(mod)
         fstep = cdt.reini_dict[mod]
         try:
-            cdt.collect(startyear, startmonth, stationstartday, gmod, getattr(METread,mod+'_modrun'), locations[station], fstep=fstep, modlength=67, numdays=stationnumdays)
+            ml = modlength[mod]
+            cdt.collect(startyear, startmonth, stationstartday, gmod, getattr(METread,mod+'_modrun'), locations[station], fstep=fstep, modlength=ml, numdays=stationnumdays)
         except errlist:
             print('model data '+mod+' not processed')
         finally:
