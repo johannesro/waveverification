@@ -67,16 +67,16 @@ def read_d22(station,start=None,end=None):
         try:
             dy=pl.num2date(d).strftime("%Y%m%d")
             #print('try to read d22 from /opdata...')
-            f = open("/opdata/offshore/"+rig+"/d22/"+dy+".d22", "r")
+            f = open("/vol/data/offshore/"+rig+"/d22/"+dy+".d22", "r")
         except IOError:
             dy=pl.num2date(d).strftime("%Y/%Y%m%d")
             try:
                  #print('try to read d22 from hindcast...')
-                 f = open("/vol/hindcast3/waveverification/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")       
+                 f = open("/lustre/storeB/immutable/short-term-archive/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")       
             except IOError:
                 #print('try to read d22 from starc')
                 try:
-                    f = open("/starc/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")
+                    f = open("/lustre/storeB/project/fou/hi/waveverification/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")
                 except IOError:
                     print('no d22 file for station '+station+' at '+dy)
                     continue

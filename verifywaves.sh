@@ -6,10 +6,10 @@
 #export R_LIBS_SITE="/metno/vvfelles/pakker/R-Pakker"
 #export R_LIBS="/disk1/local/R-packages"
 
-printf -v year %2.2i `date +%Y`
-printf -v month %2.2i `date +%m`
+#printf -v year %2.2i `date +%Y`
+#printf -v month %2.2i `date +%m`
 
-cd /vol/hindcast3/waveverification/waveverification
+#cd /home/johannesro/waveverification
 
 echo 'start wave verification script' >> wv.log
 
@@ -20,20 +20,15 @@ echo 'start wave verification script' >> wv.log
 ./validate.py
 
 # update webpage
-cd /vol/hindcast3/waveverification/website 
+cd /lustre/storeB/project/fou/hi/waveverification/website
 
-# september is not working with the above commands because the shell misinterprets the lines !?
-#./makepage.sh $year 09
-#./makepage_DD.sh $year 09
-#./makeindex.sh $year 09
-
-./makepage.sh $year $month
-./makepage_DD.sh $year $month
-./makeindex.sh $year $month
+./makepage.sh 
+./makepage_DD.sh 
+./makeindex.sh 
 
 
 # upload webpage
-cd /vol/hindcast3/waveverification
+cd /lustre/storeB/project/fou/hi/waveverification
 ./upload.sh
 
 # secure data on local pc

@@ -35,8 +35,16 @@ from mpl_toolkits.basemap import Basemap #package for map projection
 
 # variable list for ECMWF netcdf files
 # should better list these names in variables.py!
-ECvardict ={ 'Hs':  'swh', 'Tp':  'pp1d', 'Tm02': 'mp2', 'DDM': 'mwd', 'Hs_s': 'shts', 'Tm02_s': 'p2ps', 'DDM_s': 'mdts', 'FF': 'wind'}
+ECvardict ={ 'Hs':  'significant_wave_height', 
+        'Tp':  'peak_wave_period', 
+	'Tm02': 'mean_wave_period',
+	'DDM': 'wave_direction',
+	'Hs_s': 'significant_swell_wave_height',
+	'Tm02_s': 'sea_surface_swell_wave_period', # or is this Tp_s?
+	'DDM_s': 'sea_surface_swell_wave_to_direction'}
+
 MWAMvardict = { 'Hs':'hs', 'Tp':'tp', 'Tp_s':'tp_swell', 'Tm02':'tm2', 'DDM':'thq', 'Hs_s':'hs_swell', 'Tm02_s':'tm2_swell', 'DDM_s':'thq_swell', 'FF':'ff', 'DD':'dd'}
+
 WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
@@ -167,7 +175,7 @@ def LAWAM_modrun(location, run, varnamelist, step=1):
             datadict.update({varname: ecdatadict[ecname]})
     else:
        print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(67)*sp.nan
+       nan = sp.ones(241)*sp.nan
        datadict = {'time':nan}
        for varname in ECvardict.keys():
            datadict.update({varname: nan})
@@ -183,7 +191,7 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata
-    filename=run.strftime("/disk4/ECMWF_ECWAVE/ECWAM_wave_%Y%m%d_%H.nc")
+    filename=run.strftime("/vol/data/ec/ecwam_%Y%m%dT%HZ.nc")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
@@ -193,7 +201,7 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
             datadict.update({varname: ecdatadict[ecname]})
     else:
        print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(67)*sp.nan
+       nan = sp.ones(241)*sp.nan
        datadict = {'time':nan}
        for varname in ECvardict.keys():
            datadict.update({varname: nan})
@@ -290,14 +298,15 @@ def MWAM8_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
     run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
+    Note that the ARC-MFC WAM always starts at 06 hours only!
     '''
     # ensure correct formats
     location = list(location)
     # check file, preferably from opdata (from ppi: /vol/data/)
-    filename = run.strftime("/vol/data/wave/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
+    filename = run.strftime("/vol/data/wave/MyWave_wam8_WAVE_%Y%m%dT06Z.nc")
     if not os.path.isfile(filename):
         #filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
-        filename = run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
+        filename = run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT06Z.nc")
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
@@ -378,7 +387,7 @@ def nctimeseries(filename, varnamelist, coordinate, grid=None):
             if len(nc.variables[var].shape) == 4:
                 data[var] = nc.variables[var][:,0,y,x]
         except KeyError:
-            print 'no variable '+var+'in file '+filename
+            #print 'no variable '+var+' in file '+filename
             data[var] = None
     # check for alternative varnames 
     varnames = {'hs':'Hs', 'tp':'Tp', 'ff':'FF', 'dd':'DD', 'tm2':'Tm02', 'thq':'DDM', 'significant_wave_height':'Hs', 'wind_speed_10m':'FF'}

@@ -35,10 +35,10 @@ collectsubjective = True
 collectobservation = True
 
 # which model to process
-models = ['AROME', 'MWAM4', 'EXP', 'MWAM8']
+models = ['AROME', 'MWAM4', 'EXP', 'MWAM8', 'ECWAM']
 
 # how may output time steps (usually in hours) in each model run
-modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':241, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
+modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':67, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
 
 
 

@@ -50,14 +50,14 @@ EXP = {'Hs':  ['significant wave height','m','hs'],
                'FF':['wind speed','m/s','ff'],
                'DD':['wind direction','degree','dd','oceanographic']} 
 
-ECWAM =    {'Hs':  ['significant wave height','m','swh'],
-               'Tp':  ['peak period','s','pp1d'],
-               'Tm02':['mean period','s','mp2'],
-               'DDM': ['mean direction','degree','mwd','oceanographic'],
-               'Hs_s':['swell significant wave height','m','shts'],
-               'Tm02_s':['swell mean period','s','p2ps'],
-               'DDM_s':['swell mean direction','degree','mdts','oceanographic'],
-               'FF':['wind speed','m/s','wind']}
+ECWAM =    {'Hs':  ['significant wave height','m','significant_wave_height'],
+               'Tp':  ['peak period','s','peak_wave_period'],
+               'Tm02':['mean period','s','mean_wave_period'],
+               'DDM': ['mean direction','degree','wave_direction','oceanographic'],
+               'Hs_s':['swell significant wave height','m','significant_swell_wave_height'],
+               'Tm02_s':['swell mean period','s','sea_surface_swell_wave_period'], # or is this Tp_s ?
+               'DDM_s':['swell mean direction','degree','sea_surface_swell_wave_to_direction','oceanographic']}
+
 
 LAWAM = ECWAM
 

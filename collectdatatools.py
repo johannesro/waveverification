@@ -15,12 +15,12 @@ import variables
 #modlength = 67 # hours in each model run
 subjlist = ['ekofiskL', 'ekofisk', 'draugen', 'valhall', 'oseberg', 'osebergc']
 subj_reinitime = {'ekofiskL':6, 'ekofisk':6, 'draugen':12, 'valhall':12, 'oseberg':12, 'osebergc':12}
-reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM4':6, 'MWAM8':24, 'EXP':12, 'WAMAROME2W':24, 'WAMAROME1W':24}
+reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM4':6, 'MWAM8':24, 'EXP':6, 'WAMAROME2W':24, 'WAMAROME1W':24}
 
 #modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':241, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
 
 nleadtimes6 = int(sp.ceil(1.0*67/6))
-nleadtimes12 = int(sp.ceil(1.0*67/12))
+nleadtimes12 = int(sp.ceil(1.0*241/12))
 nleadtimes24 = int(sp.ceil(1.0*241/24))
 
 def nleadtimes(ml, reini):
@@ -67,7 +67,7 @@ class validationfile():
         ncleadtime24 = nc.createVariable('lead_time24h',sp.int32, dimensions=('lead_time24h',))
 # add time to nc file
         ncleadtime6[:] = range(0,67,6)
-        ncleadtime12[:] = range(0,67,12)
+        ncleadtime12[:] = range(0,241,12)
         ncleadtime24[:] = range(0,241,24)
 
 # generate time for netcdf file
@@ -198,6 +198,12 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
             modrun = dt.datetime(cyear,cmonth,cday+1,hour) # get initialization time of model run
             # time series from the model with the given initialization time
             data = modelreader(location, modrun, ncgroup.keys()) # This reader should be universal for each model! (variable list not yet used as parameter)
+            # make sure the model data has hourly time steps
+            #print data['time']
+	    #print len(data['time']), len(data['Hs'])
+            ensure_hourly(data)
+            #print data['time']
+	    #print len(data['time']), len(data['Hs'])
             try:
                 modoffset = modrun-data['time'][0] #check at which hour the model output starts. Assume hourly output thereafter!
             except TypeError:
@@ -269,5 +275,30 @@ def collectsubjective(year, month, sday, ncgroup, station, fstep=6, modlength=67
 
     return 0
 
+def ensure_hourly(data):
+	'''
+	'''
+	time = data['time']
+	try:
+		if not ((len(time)-1) == (time[-1]-time[0]).total_seconds()/3600):
+			make_hourly(data)
+		else:
+			print('original timing ok')
+	except AttributeError:
+		return 1
+	return 0
 
+def make_hourly(data):
+	'''
+	'''
+	time = data['time']
+	ntimesnew = int((time[-1]-time[0]).total_seconds() / 3600)
+	timenew = [time[0]+dt.timedelta(i)/24 for i in range(ntimesnew)]
+	for varname, var in data.iteritems():
+		if (varname == 'time'):
+			continue
+		var = sp.interp(pl.date2num(timenew), pl.date2num(time), var)
+                data[varname] = var
+	data['time'] = timenew
+	return 0
 

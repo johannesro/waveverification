@@ -36,7 +36,7 @@ locations = {'ekofisk':     [56.54, 3.21],
 
 landegode =  {'landegode':    [67.56, 14.17]}
 
-testlocations = {'ekofisk':     [56.54, 3.21],
+testlocations = {'ekofiskL':     [56.54, 3.21],
                  'draugen':      [64.35 ,7.78]}
 
 
