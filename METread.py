@@ -218,7 +218,7 @@ def MWAM10_modrun(location, run, varnamelist, step=1):
     filename = run.strftime("/vol/data/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
     if not os.path.isfile(filename):
         filename = run.strftime("/vol/hindcast3/waveverification/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
-    gfile = nc4.Dataset('/lustre/storeB/project/fou/hi/waveverification/WAM10grid.nc')  #this step could later be droppet, if lat/lon info are available in operational files
+    gfile = nc4.Dataset('/lustre/storeA/project/fou/hi/waveverification/WAM10grid.nc')  #this step could later be droppet, if lat/lon info are available in operational files
     lat, lon = gfile.variables['latitude'][:], gfile.variables['longitude'][:]
     gfile.close()
     print(' ')

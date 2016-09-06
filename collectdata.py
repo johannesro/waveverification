@@ -75,7 +75,7 @@ print numdays
 print updatemode
 #modlength = 67 # hours in each model run
 #outpath = '/vol/hindcast3/waveverification/data'
-outpath = '/lustre/storeB/project/fou/hi/waveverification/data'
+outpath = '/lustre/storeA/project/fou/hi/waveverification/data'
 
 # errors to be catched during processing:
 errlist = IOError, EOFError, KeyError, IndexError
