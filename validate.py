@@ -192,9 +192,11 @@ for station, parameters in locations.iteritems():
             obsnum = i+1
             if all(sp.isnan(Nobs)):
                 continue
-            ax1.plot(time, Nobs, label='observation #'+str(obsnum),lw=1)
+            mask = sp.isfinite(Nobs)
+            ax1.plot(sp.array(time)[mask], sp.array(Nobs)[mask], '.', label='observation #'+str(obsnum),lw=1)
+            #ax1.plot(time, Nobs, label='observation #'+str(obsnum),lw=1)
         for gname, var in modeldata.iteritems():
-            ax1.plot(time, var[0],'--',color=ct[gname], label=gname, lw=2)
+            ax1.plot(time, var[0],'-',color=ct[gname], label=gname, lw=1.5)
         ax1.legend(fontsize='small')
         ax1.grid('on',which='minor');ax1.grid('on',which='major',linestyle='--',linewidth=0.5)
         ax1.set_title(station+' '+varname+' ['+units+']')
