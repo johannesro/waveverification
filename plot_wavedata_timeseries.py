@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
  usage:
- ./plot_wavedata_timeseries
+ ./plot_wavedata_timeseries.py
 
 reads wave verification station data from /lustre/storeA/project/fou/hi/waveverification/data'
 and plots time series.
