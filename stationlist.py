@@ -1,4 +1,4 @@
-locations = {'ekofisk':     [56.54, 3.21],
+locations = {#'ekofisk':     [56.54, 3.21],
             'ekofiskL':    [56.54, 3.21],
             'gullfaksc':    [61.20, 2.27],
             'asgardb':      [65.11 ,6.79],
@@ -14,7 +14,7 @@ locations = {'ekofisk':     [56.54, 3.21],
 #            'ormenlange':   [63.38, 5.31], # 2 2 1 
             'oseberg':      [60.50, 2.80], # - 2 1 
             'osebergc':     [60.64, 2.78], # 2 2 1 
-            'osebergsyd':   [60.40, 2.80], # 3 2 1 
+#            'osebergsyd':   [60.40, 2.80], # 3 2 1 
             'sleipner':     [58.37, 1.91], # 4 4 2 
 #            'sleipnerb':    [58.43, 1.70], # 2 - - 
             'snorrea':      [61.45, 2.15], # 4 4 1 
@@ -31,7 +31,7 @@ locations = {'ekofisk':     [56.54, 3.21],
             'visund':       [61.37, 2.46], # 4 1 
 #            'westnav':     [??? ]
             'heidrun':      [65.32, 7.32],
-            'landegode':    [67.56, 14.17],
+#            'landegode':    [67.56, 14.17],
              'goliat':      [71.29, 22.32]}
 
 landegode =  {'landegode':    [67.56, 14.17]}

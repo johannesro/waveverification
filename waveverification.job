@@ -1,0 +1,36 @@
+#!/bin/bash -f
+#$ -N waveverification
+#$ -l h_rt=12:30:00
+#$ -S /bin/bash
+#$ -pe mpi-fn 16
+#$ -q ded-parallel.q
+#$ -M johannesro@met.no
+#$ -m abe
+#$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
+#$ -cwd 
+#$ -j y
+# ---------------------------
+
+echo "Got $NSLOTS slots."
+
+export R_LIBS=/modules/trusty/R/3.2.1/lib/R
+
+# gather data
+./collectdata.py 
+
+# make plots
+./validate.py
+
+# update webpage
+cd /lustre/storeA/project/fou/hi/waveverification/website
+
+./makepage.sh 
+./makepage_DD.sh 
+./makeindex.sh 
+
+# upload webpage
+cd /lustre/storeA/project/fou/hi/waveverification
+./upload.sh
+
+
+

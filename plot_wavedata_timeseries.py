@@ -14,18 +14,18 @@ from netCDF4 import Dataset, date2num, num2date
 import os
 import datetime as dt
 
-station='draugen' # select station
+station='norne' # select station
 year = 2016
-month = 9
+month = 10
 varname = 'Hs' # 'Tm02','FF','Tp', 'DDM' # select variable name
 models = ['MWAM4', 'MWAM8', 'ECWAM']
 sensor = 0 # specify which wave sensor to use
 
 # advanced user options:
-setdates = False # set this swith to True if you want to plot specific days, as set below:w
+setdates = True # set this swith to True if you want to plot specific days, as set below:w
 if setdates:
-    t1 = dt.datetime(2016,9,4) # set specific dates for time series plot
-    t2 = dt.datetime(2016,9,10)
+    t1 = dt.datetime(2016,10,21) # set specific dates for time series plot
+    t2 = dt.datetime(2016,10,28)
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
@@ -78,7 +78,7 @@ ax.plot(sp.array(time)[mask], sp.array(obs)[mask], '.', label='obs',lw=1)
 for gname, var in modeldata.iteritems():
     ax.plot(time, var[0],'-',color=ct[gname], label=gname, lw=1.5)
 
-ax.legend(fontsize='small')
+#ax.legend(fontsize='small')
 ax.grid('on',which='minor')
 ax.grid('on',which='major',linestyle='--',linewidth=0.5)
 ax.set_title(station+' '+varname+' ['+units+']')

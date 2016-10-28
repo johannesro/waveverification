@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # ./validate 201409
 import scipy as sp
+import numpy as np
 import numpy.ma as ma
 import matplotlib
 matplotlib.use('Agg')
@@ -10,7 +11,7 @@ import dataanalysis as da
 import os
 import datetime as dt
 import validationtools as vt
-from stationlist import bestlocations as locations
+from stationlist import locations as locations
 from stationlist import WMsensors, bestWMsensor
 import sys
 #import calendar
@@ -20,7 +21,7 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 interactive=True
 
 if interactive:
-    timep='201609'
+    timep='201610'
     #timep='2013-2014'
 else:
     if len(sys.argv) > 1:
@@ -84,16 +85,14 @@ fmt=dates.DateFormatter('%d.%m.%Y')
 
 varname = 'Hs'
 obs_all = []
-mod_all = {'ECWAM':[], 'MWAM4':[], 'MWAM8':[], 'EXP':[], 'Subjective':[]}
+mod_all = {'ECWAM':[], 'MWAM4':[], 'MWAM8':[], 'EXP':[]}
 
 for station, parameters in locations.iteritems():
     print ' '
     print 'read data for station '+station+' for '+timep
 #
 # open file
-    #path = '/vol/hindcast3/waveverification/data'
     path = '/lustre/storeA/project/fou/hi/waveverification/data'
-#filename = starttime.strftime(station+'_201312.nc')
     filename = station+'_'+timep+'.nc'
     nc       = Dataset(os.path.join(path,filename),mode='r')
     time = num2date(nc.variables['time'][:],nc.variables['time'].units)
@@ -125,9 +124,11 @@ for station, parameters in locations.iteritems():
     # append to list for all stations:
     obs_all.append(obs)
     for gname, var in modeldata.iteritems():
-        mod_all[gname].append(var)
+        if gname in mod_all.keys():
+            print('append ' +gname+ ' for ' + station)
+            mod_all[gname].append(var)
 
-    nc.close()
+    #nc.close()
 
 
 # make arrays from list
@@ -143,29 +144,30 @@ fig=pl.figure(figsize=[10,5])
 ax1=fig.add_subplot(121)
 ax2=fig.add_subplot(122)
 for gname, var in modeldata.iteritems():
-   vt.scqqplot(obs, var[:,0,:],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)
+   vt.scqqplot(obs, var[:,0,:],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)# , prob=sp.arange(0.001,0.999,0.001))
 ax1.legend(loc='lower right',fontsize='small')
-ax1.set_title(station+' '+varname+' ['+units+']'+' obs#'+str(sensor+1)+' '+timestr)
+ax1.set_title('all stations '+varname+' ['+units+']'+' '+timestr)
 pfilename = 'allstations_'+varname+'_scatterqq.png'
-fig.tight_layout(pad=0.2)
+fig.tight_layout(pad=0.4)
 fig.savefig(os.path.join(ppath+varname,pfilename))
 
 
 #
 # plot statistics as function of forcast time
 #
-'''
+
 fig = pl.figure(figsize=[10,8])
 ax1 = fig.add_subplot(411)
 ax2 = fig.add_subplot(412)
 ax3 = fig.add_subplot(413)
 ax4 = fig.add_subplot(414)
-ax1.set_title(station+' '+varname+' forecast skill'+' '+timestr)
+ax1.set_title('allstations '+varname+' forecast skill'+' '+timestr)
 for gname, var in modeldata.iteritems():
-    vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.amerr, color=ct[gname],  label=gname, ax=ax1)
-    vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.rmse, color=ct[gname],  label=gname, ax=ax2)
-    vt.forecastskillplot(-obs, -var, G[gname].getncattr('reinitialization_step'), vt.bias, color=ct[gname],  label=gname, ax=ax3)
-    vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
+    vart = np.transpose(var,axes=[1,0,2])
+    vt.forecastskillplot(obs, vart, G[gname].getncattr('reinitialization_step'), vt.amerr, color=ct[gname],  label=gname, ax=ax1)
+    vt.forecastskillplot(obs, vart, G[gname].getncattr('reinitialization_step'), vt.rmse, color=ct[gname],  label=gname, ax=ax2)
+    vt.forecastskillplot(-obs, -vart, G[gname].getncattr('reinitialization_step'), vt.bias, color=ct[gname],  label=gname, ax=ax3)
+    vt.forecastskillplot(obs, vart, G[gname].getncattr('reinitialization_step'), vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
 ax1.legend(loc='lower right',fontsize='small')
 ax1.set_ylabel('MAE ['+units+']')
 ax2.set_ylabel('RMSE ['+units+']')
@@ -173,9 +175,9 @@ ax3.set_ylabel('model bias ['+units+']')
 ax4.set_ylabel('cor. coef.')
 ax4.set_xlabel('model lead time [h]')
 fig.tight_layout(pad=0.2)
-pfilename = station+'_'+varname+'_forecastskill.png'
+pfilename = 'allstations_'+varname+'_forecastskill.png'
 fig.savefig(os.path.join(ppath+varname,pfilename))
-'''
+
 
 if interactive:
     pl.show()
