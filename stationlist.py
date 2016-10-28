@@ -39,6 +39,7 @@ landegode =  {'landegode':    [67.56, 14.17]}
 testlocations = {'ekofiskL':     [56.54, 3.21],
                  'draugen':      [64.35 ,7.78]}
 
+bestlocations = testlocations
 
 newlocations = {'goliat':      [71.29, 22.32]}
 
