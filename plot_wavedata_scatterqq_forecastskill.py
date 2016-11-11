@@ -13,6 +13,7 @@ import pylab as pl
 from netCDF4 import Dataset, date2num, num2date
 import os
 import datetime as dt
+import validationtools as vt
 
 station='heidrun' # select station
 year = 2016
@@ -21,12 +22,6 @@ varname = 'Hs' # 'Tm02','FF','Tp', 'DDM' # select variable name
 #models = ['MWAM4', 'MWAM8', 'ECWAM']
 models = ['MWAM8']
 sensor = 0 # specify which wave sensor to use
-
-# advanced user options:
-setdates = False # set this swith to True if you want to plot specific days, as set below:w
-if setdates:
-    t1 = dt.datetime(2016,10,21) # set specific dates for time series plot
-    t2 = dt.datetime(2016,10,28)
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
@@ -63,29 +58,43 @@ for model in models:
     var[var.mask==True]=sp.nan
     modeldata[model] = var
 
+
 #
-# make time series plot 
+# make scatter and qq plot
 #
-fig = pl.figure(figsize=[15,6])
-ax = fig.add_subplot(111)
-
-if setdates:
-    pl.xlim([t1,t2])
-
-ax.xaxis.set_minor_locator(minorLocator)
-mask = sp.isfinite(obs)
-ax.plot(sp.array(time)[mask], sp.array(obs)[mask], '.', label='obs',lw=1)
-
+fig=pl.figure(figsize=[10,5])
+ax1=fig.add_subplot(121)
+ax2=fig.add_subplot(122)
 for gname, var in modeldata.iteritems():
-    ax.plot(time, var[0],'-',color=ct[gname], label=gname, lw=1.5)
-
-#ax.legend(fontsize='small')
-ax.grid('on',which='minor')
-ax.grid('on',which='major',linestyle='--',linewidth=0.5)
-ax.set_title(station+' '+varname+' ['+units+']')
-ax.legend(loc='upper left')
+   vt.scqqplot(obs, var[0],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)
+ax1.legend(loc='lower right')
+ax1.set_title(station+' '+varname+' ['+units+'] %4d-%2d' %(year,month))
 fig.tight_layout(pad=0.6)
-fig.savefig(station+'_'+varname+'_tseries.png')
+fig.savefig(station+'_'+varname+'_scatterqq_%4d%2d.png' %(year,month))
+
+#
+# plot statistics as function of forcast time
+#
+fig = pl.figure(figsize=[10,8])
+ax1 = fig.add_subplot(411)
+ax2 = fig.add_subplot(412)
+ax3 = fig.add_subplot(413)
+ax4 = fig.add_subplot(414)
+ax1.set_title(station+' '+varname+' forecast skill'+' %4d-%2d' %(year,month))
+for gname, var in modeldata.iteritems():
+    vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.amerr, color=ct[gname],  label=gname, ax=ax1)
+    vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.rmse, color=ct[gname],  label=gname, ax=ax2)
+    vt.forecastskillplot(-obs, -var, G[gname].getncattr('reinitialization_step'), vt.bias, color=ct[gname],  label=gname, ax=ax3)
+    vt.forecastskillplot(obs, var, G[gname].getncattr('reinitialization_step'), vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
+ax1.legend(loc='lower right')
+ax1.set_ylabel('MAE ['+units+']')
+ax2.set_ylabel('RMSE ['+units+']')
+ax3.set_ylabel('model bias ['+units+']')
+ax4.set_ylabel('cor. coef.')
+ax4.set_xlabel('model lead time [h]')
+fig.tight_layout(pad=0.6)
+fig.savefig( station+'_'+varname+'_forecastskill_%4d%2d.png' %(year,month))
+
 
 
 pl.show()

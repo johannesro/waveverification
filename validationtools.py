@@ -44,7 +44,10 @@ def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0
     ax1.set_xlabel('observation')
 #    ax1.text(0.05,0.9,'N='+str(len(obs)),transform=ax1.transAxes)
     ax1.axis('equal')
-    ax1.legend(loc='lower right',fontsize='small')          
+    try:
+        ax1.legend(loc='lower right',fontsize='small')          
+    except TypeError:
+        ax1.legend(loc='lower right')          
     obsq = sp.stats.mstats.mquantiles(finite(obsc),prob=prob)
     varq = sp.stats.mstats.mquantiles(finite(varc),prob=prob)
     ax2.plot(obsq, varq, 'x',ms=5,mew=2, color=color, label=label)
@@ -52,7 +55,10 @@ def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0
     ax2.set_ylabel('model')
     ax2.set_xlabel('observation')
     ax2.set_title(str(prob[1]-prob[0])+'-step quantiles')
-    ax2.legend(loc='lower right',fontsize='small')
+    try:
+        ax2.legend(loc='lower right',fontsize='small')
+    except TypeError:
+        ax2.legend(loc='lower right')
     ax1.axis([minval,maxval,minval,maxval])
     ax1.axis([minval,maxval,minval,maxval])
     ax1.grid('on')
