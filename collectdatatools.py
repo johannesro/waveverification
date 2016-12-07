@@ -1,6 +1,6 @@
 import scipy as sp
 
-import netCDF4 as nc4 #import Dataset, MFDataset, MFTime, date2num, num2date
+import netCDF4 as netCDF4 #import Dataset, MFDataset, MFTime, date2num, num2date
 import datetime as dt
 from scipy import stats
 import numpy as np
@@ -10,14 +10,13 @@ import pylab as pl
 import os
 from stationlist import testlocations as locations
 import collectdatatools as cdt
-import variables
+import config
 
 #modlength = 67 # hours in each model run
+# these list should be in config.py
 subjlist = ['ekofiskL', 'ekofisk', 'draugen', 'valhall', 'oseberg', 'osebergc']
 subj_reinitime = {'ekofiskL':6, 'ekofisk':6, 'draugen':12, 'valhall':12, 'oseberg':12, 'osebergc':12}
 reini_dict = {'WAM4': 12, 'WAM10':12, 'AROME':6, 'HIRLAM8':6, 'LAWAM':12, 'ECWAM':12, 'MWAM4':6, 'MWAM8':24, 'EXP':6, 'WAMAROME2W':24, 'WAMAROME1W':24}
-
-#modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':241, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
 
 nleadtimes6 = int(sp.ceil(1.0*67/6))
 nleadtimes12 = int(sp.ceil(1.0*241/12))
@@ -43,11 +42,13 @@ class validationfile():
             self.create_file()
         else:
             print('open existing netcdf station file: '+os.path.join(path,filename))
-            self.nc = nc4.Dataset(self.filename,mode='a',format='NETCDF4')
-        self.time = nc4.num2date(self.nc.variables['time'][:], self.nc.variables['time'].units)
+            self.nc = netCDF4.Dataset(self.filename,mode='a',format='NETCDF3')
+            mstr = self.nc.models
+            self.models = mstr.strip().split(' ')
+        self.time = netCDF4.num2date(self.nc.variables['time'][:], self.nc.variables['time'].units)
 #
     def create_file(self):
-        nc      = nc4.Dataset(self.filename,mode='w',format='NETCDF4')
+        nc      = netCDF4.Dataset(self.filename,mode='w',format='NETCDF4')
         self.nc = nc
         self.nc.title = 'wave verification data for '+ self.station
         self.nc.station_name = self.station
@@ -77,104 +78,141 @@ class validationfile():
         ncleadtime24.units = 'hours'
         t0 = self.starttime - dt.datetime(1970,1,1)
         nctime[:] = t0.total_seconds() + sp.array(range(ndays*24))*3600.
+        #self.time = netCDF4.num2date(self.nc.variables['time'][:], self.nc.variables['time'].units)
+
+# list for model names
+        nc.models = ''
+        self.models = []
 
 # initialize d22 and subjective variable group
-        self.init_d22group()
+        self.init_obs()
         if self.station in subjlist:
             self.init_subjective()
         self.nc.sync()
 #        
-    def get_modelgroup(self, gname):
+    def get_obs(self):
+        '''
+        Return dictionary of observation nc variables
+        '''
+        gOBS = {}
+        variables = self.nc.getncattr('observations').strip().split(' ')
+        for var in variables:
+            gOBS[var] = self.nc.variables[var + '_OBS']
+        return gOBS
+#
+    def get_modelgroup(self, gname, create=True):
         '''
         Check if the requested model group exists, if not create it. 
         Return the model group as dictionary of netcdf variables
         '''
-        try:
-            group = self.nc.groups[gname].variables
-        except KeyError:
-            self.init_modelgroup(gname)
-            group = self.nc.groups[gname].variables
+        if gname in self.models:
+            variables = self.nc.getncattr(gname).strip().split(' ')
+            group = {}
+            for var in variables:
+                group[var] = self.nc.variables[var+'_'+gname]
+        else:
+            if create == True:
+                group = self.init_modelgroup(gname)
+        setattr(self, gname, group) # set dictionary with nc variable handles as attribute to validationfile object
         return group
 #
     def init_modelgroup(self,gname):
-        setattr(self, gname, {})
-        ncgroup = self.nc.createGroup(gname)
-        ncgroup.reinitialization_step = reini_dict[gname]
-        varlist = getattr(variables, gname)
+        group = {}
+        self.nc.setncattr(gname+'_reinitialization_step' , reini_dict[gname])
+        self.nc.setncattr(gname , '')
+        self.nc.models = self.nc.models+gname+' '
+        self.models.append(gname)
+        varlist = getattr(config, gname)
         for varname,specs in varlist.iteritems():
             lt = str(reini_dict[gname])
-            ncvar = ncgroup.createVariable(varname,sp.float32, dimensions=('lead_time'+lt+'h','time'))
-            getattr(self, gname)[varname]=ncvar
-            ncvar.long_name = specs[0]
-            ncvar.units = specs[1]
-            if specs[1]=='degree':
-                ncvar.Convention = specs[3]
+            ncvar = self.nc.createVariable(varname+'_'+gname,sp.float32, dimensions=('lead_time'+lt+'h','time'))
+            self.nc.setncattr(gname , self.nc.getncattr(gname)+varname+' ') # append variable to nc attribute 
+            group[varname] = ncvar # append nc object to dictionary
+            ncvar.standard_name = specs['standard_name']
+            ncvar.short_name = specs['short_name']
+            ncvar.units = specs['units']
+            if specs['units']=='degree':
+                ncvar.Convention = specs['convention']
                 ncvar.NorthDegree = '0.'
                 ncvar.WestDegree = '90.'
+        setattr(self, gname, group) # set dictionary with nc variable handles as attribute to validationfile object
+        return group
 
-    def init_d22group(self):
+    def init_obs(self):
 #
-# create variable group for Observations from d22 files
+# create variable group for Observations
 #
-        ncOBS      = self.nc.createGroup('OBS_d22')
         self.gOBS = {}
-        for varname,specs in variables.d22.iteritems():
+        self.nc.observations = ''
+        for varname,specs in config.d22.iteritems():
+            self.nc.observations = self.nc.observations + varname + ' '  
             if (varname=='FF') or (varname=='DD'):
-                self.gOBS.update({  varname: ncOBS.createVariable(varname,sp.float32, dimensions=('n_windobs','time'))})
+                self.gOBS.update({  varname: self.nc.createVariable(varname+'_OBS',sp.float32, dimensions=('n_windobs','time'))})
             else:
-                self.gOBS.update({  varname: ncOBS.createVariable(varname,sp.float32, dimensions=('n_waveobs','time'))})
+                self.gOBS.update({  varname: self.nc.createVariable(varname+'_OBS',sp.float32, dimensions=('n_waveobs','time'))})
 # variable attributes
-            self.gOBS[varname].long_name = specs[0]
-            self.gOBS[varname].units = specs[1]
+            self.gOBS[varname].standard_name = specs['standard_name']
+            self.gOBS[varname].short_name = specs['short_name']
+            self.gOBS[varname].units = specs['units']
         for varname in ['DD','DDP','DDM']:
             self.gOBS[varname].Convention = 'meteorological'
             self.gOBS[varname].NorthDegree = '0.'
             self.gOBS[varname].WestDegree = '90.'
+        return self.gOBS
 
 # 
 # create variable group for subjective analysis
 #
     def init_subjective(self):
-            ncObj = self.nc.createGroup('Subjective')
-            ncObj.reinitialization_step = 6
-            gObj = {'Hs': ncObj.createVariable('Hs', sp.float32, dimensions=('lead_time6h','time')),
-                   'Tp': ncObj.createVariable('Tp', sp.float32, dimensions=('lead_time6h','time')),
-                   'Tm02': ncObj.createVariable('Tm02', sp.float32, dimensions=('lead_time6h','time')),
-                   'FF': ncObj.createVariable('FF', sp.float32, dimensions=('lead_time6h','time')),
-                   'DD': ncObj.createVariable('DD', sp.float32, dimensions=('lead_time6h','time'))}
+            self.models.append('Subjective')
+            self.nc.models = self.nc.models+'Subjective '
+            self.nc.setncattr('Subjective_reinitialization_step', 6)
+            gObj = {'Hs': self.nc.createVariable('Hs_Subjective', sp.float32, dimensions=('lead_time6h','time')),
+                   'Tp': self.nc.createVariable('Tp_Subjective', sp.float32, dimensions=('lead_time6h','time')),
+                   'Tm02': self.nc.createVariable('Tm02_Subjective', sp.float32, dimensions=('lead_time6h','time')),
+                   'FF': self.nc.createVariable('FF_Subjective', sp.float32, dimensions=('lead_time6h','time')),
+                   'DD': self.nc.createVariable('DD_Subjective', sp.float32, dimensions=('lead_time6h','time'))}
             gObj['Hs'].units = 'm'
             gObj['Tp'].units = 's'
             gObj['Tm02'].units = 's'
             gObj['FF'].units = 'm/s'
             gObj['DD'].units = 'degree'
             gObj['DD'].Convention = 'meteorological'
-    def get_subjective(self):
+            self.nc.Subjective = 'Hs Tp Tm02 FF DD'
+            self.Subjective = gObj
+            return gObj
+
+    def get_subjective(self, create=True):
         '''
         Check if the subjective  group exists, if not create it. 
         Return the subjective group as dictionary of netcdf variables
         '''
-        try:
-            group = self.nc.groups['Subjective'].variables
-        except KeyError:
-            self.init_subjective()
-            group = self.nc.groups['Subjective'].variables
+        if 'Subjective' in self.models:
+            group = {}
+            for var in self.nc.Subjective.strip().split(' '):
+                group[var] = self.nc.variables[var+'_Subjective']
+        else:
+            if create==True:
+                group = self.init_subjective()
+        self.Subjective = group
         return group
 #
 # netcdf attributes
-# nc standard: variables: units, long_name
+# nc standard: variables: units, short_name
 # more: mod
 # global: Conventions = 'CF', _FillValue, missing_value, title, history
 
 
 
 # each variable in the group dictionary is attempted to be read from the specified model reader:
-def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlength=67, numdays=None):
+def collect(year, month, sday, modelgroup, modelreader, location, fstep=6, modlength=67, numdays=None, numdays_previousmonth=3):
     '''
     go through each day of the month, including the three previous days and write the data from the model file into the new netcdf file
     the data will be sorted by lead time of the forcast to yield time series of quasi-constant lead times
 
     year, month: collect during this month
     sday: day of month where to start collection
+    modelgroup: dictionary with nc variable instances
     fstep: number of hours between each model reinitialization
     ''' 
     forecasttimes = range(0,24,fstep)
@@ -182,7 +220,8 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
     daysofmonth = calendar.monthrange(year,month)[1]
     if numdays == None:
         numdays = daysofmonth
-    firstdaytoread = sday-1 if sday>1 else sday-4 # collect data from previous month on the first of each month
+    # collect data from the last 5 days of previous month on the first of each month
+    firstdaytoread = sday-1 if sday>1 else sday-(numdays_previousmonth+1) 
     #sday starts at 1, firstdaytoread at 0 for the 1rst of each month
     for day in range(firstdaytoread,sday+numdays-1): # day also start at 0 for the 1rst of each month (python indexing)
         print('day of month: '+str(day+1))
@@ -197,13 +236,11 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
         for hour in forecasttimes: # [0, 12] or [0,6,12,18]
             modrun = dt.datetime(cyear,cmonth,cday+1,hour) # get initialization time of model run
             # time series from the model with the given initialization time
-            data = modelreader(location, modrun, ncgroup.keys()) # This reader should be universal for each model! (variable list not yet used as parameter)
-            # make sure the model data has hourly time steps
-            #print data['time']
-	    #print len(data['time']), len(data['Hs'])
+            variables = modelgroup.keys()
+            data = modelreader(location, modrun, variables) # This reader should be universal for each model! (variable list not yet used as parameter)
             ensure_hourly(data)
-            #print data['time']
-	    #print len(data['time']), len(data['Hs'])
+            #print data
+    	    #print len(data['time']), len(data['Hs'])
             try:
                 modoffset = modrun-data['time'][0] #check at which hour the model output starts. Assume hourly output thereafter!
             except TypeError:
@@ -216,9 +253,13 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
                 ncstart   = modstart + ncoffset
                 ncend     = modend   + ncoffset
                 if not (ncstart < 0 or ncend > daysofmonth*24-1) :
-                    for varname, ncid in ncgroup.iteritems():
+                    for varname, ncid in modelgroup.iteritems():
+                        #print varname
                         try:
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
+                            #print data[varname][modstart+mo:modend+mo]
+                            #print 'ncid'
+                            #print ncid[modstart/fstep,ncstart:ncend]
                         except ValueError:
                             ncend = ncstart + data[varname][modstart+mo:modend+mo].shape[0]
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
@@ -257,21 +298,13 @@ def collectsubjective(year, month, sday, ncgroup, station, fstep=6, modlength=67
             for varname, ncid in ncgroup.iteritems():
                 time,var = data[varname]
                 for i in range(len(time)):
-                    #print(' ')
-                    #print(time[i], modrun)
                     lead_time = time[i] - modrun
                     lead_time = lead_time.total_seconds() /3600.
                     lead_index = int(sp.floor(lead_time /fstep) )
                     timeofmonth = time[i] - dt.datetime(year,month,1)
-                    #print timeofmonth
                     timeofmonth = timeofmonth.total_seconds() /3600.
-                    #print((timeofmonth<0))
-                    #print((timeofmonth> daysofmonth)) 
-                    #print(lead_index > int(modlength/fstep))
                     if not ((timeofmonth<0) or (timeofmonth>(daysofmonth*24-1)) or (lead_index > int(modlength/fstep))):
-                        #print var[i]
-                        #print(lead_index, int(timeofmonth))
-                        ncid[lead_index, int(timeofmonth)] = var[i]
+                       ncid[lead_index, int(timeofmonth)] = var[i]
 
     return 0
 
