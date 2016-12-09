@@ -45,6 +45,9 @@ ECvardict ={ 'Hs':  'significant_wave_height',
 
 MWAMvardict = { 'Hs':'hs', 'Tp':'tp', 'Tp_s':'tp_swell', 'Tm02':'tm2', 'DDM':'thq', 'Hs_s':'hs_swell', 'Tm02_s':'tm2_swell', 'DDM_s':'thq_swell', 'FF':'ff', 'DD':'dd'}
 
+MWAM8vardict = { 'Hs':'VHM0', 'Tp':'VTPK', 'Tp_s':'tp_swell', 'Tm02':'VTM02', 'DDM':'VMDR', 'Hs_s':'VHM0_SW', 'Tm02_s':'VTM02', 'DDM_s':'VMDR_SW', 'DDP':'VPED', 'FF':'ff', 'DD':'dd'}
+
+
 WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
@@ -293,7 +296,7 @@ def EXP_modrun(location, run, varnamelist, step=1):
            datadict.update({varname: nan})
     return datadict
 
-#Include Copernicus Arctic wave model (Wam8)---------------------------------------------------------------
+
 def MWAM8_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
@@ -310,9 +313,9 @@ def MWAM8_modrun(location, run, varnamelist, step=1):
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location)#, grid=(lat,lon))
+        MWdatadict = nctimeseries(filename, MWAM8vardict.values(), location)#, grid=(lat,lon))
         datadict = {'time': MWdatadict['time']}
-        for varname, MWAMname in MWAMvardict.iteritems():
+        for varname, MWAMname in MWAM8vardict.iteritems():
             datadict.update({varname: MWdatadict[MWAMname]})
     else:
        print('file '+filename+' does not exist; returning missing values')
