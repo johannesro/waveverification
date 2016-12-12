@@ -217,6 +217,8 @@ def collect(year, month, sday, ncgroup, modelreader, location, fstep=6, modlengt
                 ncend     = modend   + ncoffset
                 if not (ncstart < 0 or ncend > daysofmonth*24-1) :
                     for varname, ncid in ncgroup.iteritems():
+                        if varname in ['Tp_s', 'Tm02_s']:
+                            continue
                         try:
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
                         except ValueError:
