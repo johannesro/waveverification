@@ -254,15 +254,14 @@ def collect(year, month, sday, modelgroup, modelreader, location, fstep=6, modle
                 ncend     = modend   + ncoffset
                 if not (ncstart < 0 or ncend > daysofmonth*24-1) :
                     for varname, ncid in modelgroup.iteritems():
-                        #print varname
                         try:
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
-                            #print data[varname][modstart+mo:modend+mo]
-                            #print 'ncid'
-                            #print ncid[modstart/fstep,ncstart:ncend]
                         except ValueError:
                             ncend = ncstart + data[varname][modstart+mo:modend+mo].shape[0]
                             ncid[modstart/fstep,ncstart:ncend] = data[varname][modstart+mo:modend+mo]
+                        except TypeError:
+                            print 'variable %s not available from model' %varname
+                            continue
     return 0
 
 
@@ -315,8 +314,6 @@ def ensure_hourly(data):
 	try:
 		if not ((len(time)-1) == (time[-1]-time[0]).total_seconds()/3600):
 			make_hourly(data)
-		else:
-			print('original timing ok')
 	except AttributeError:
 		return 1
 	return 0
