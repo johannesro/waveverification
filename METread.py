@@ -45,7 +45,7 @@ ECvardict ={ 'Hs':  'significant_wave_height',
 
 MWAMvardict = { 'Hs':'hs', 'Tp':'tp', 'Tp_s':'tp_swell', 'Tm02':'tm2', 'DDM':'thq', 'Hs_s':'hs_swell', 'Tm02_s':'tm2_swell', 'DDM_s':'thq_swell', 'FF':'ff', 'DD':'dd'}
 
-MWAM8vardict = { 'Hs':'VHM0', 'Tp':'VTPK', 'Tp_s':'tp_swell', 'Tm02':'VTM02', 'DDM':'VMDR', 'Hs_s':'VHM0_SW', 'Tm02_s':'VTM02', 'DDM_s':'VMDR_SW', 'DDP':'VPED', 'FF':'ff', 'DD':'dd'}
+MWAM8vardict = { 'Hs':'VHM0', 'Tp':'VTPK', 'Tm02':'VTM02', 'DDM':'VMDR', 'Hs_s':'VHM0_SW', 'Tm02_s':'VTM02_SW', 'DDM_s':'VMDR_SW', 'DDP':'VPED', 'FF':'ff', 'DD':'dd'}
 
 
 WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
