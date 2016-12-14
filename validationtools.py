@@ -38,7 +38,7 @@ def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0
         return
     maxval = max(list(obsc)+list(varc))
     minval = min(list(obsc)+list(varc))
-    ax1.plot(obsc, varc, '.', color=color, label=label+' N='+str(len(obsc)))
+    ax1.plot(obsc, varc, '.', color=color, label=label)#+' N='+str(len(obsc)))
     ax1.plot([minval,maxval],[minval,maxval],'-r')
     ax1.set_ylabel('model')
     ax1.set_xlabel('observation')
