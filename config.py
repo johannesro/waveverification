@@ -98,14 +98,14 @@ MWAM8 = {'Hs':    {'standard_name': 'sea_surface_wave_significant_height',
                    'short_name': 'swell significant wave height',
                    'units': 'm',
                    'model_name': 'VHM0_SW'},
-#         'Tp_s':  {'standard_name': 'sea_surface_swell_wave_period',
-#                   'short_name': 'swell peak period', 
-#                   'units': 's',
-#                   'model_name': 'tp_swell'},
-#         'Tm02_s':{'standard_name': 'sea_surface_swell_wave_mean_period_from_variance_spectral_density_second_frequency_moment',
-#                   'short_name': 'swell mean period',
-#                   'units': 's',
-#                   'model_name': 'tm2_swell'},
+         'Tp_s':  {'standard_name': 'sea_surface_swell_wave_period',
+                   'short_name': 'swell peak period', 
+                   'units': 's',
+                   'model_name': 'VTPK_SW'},
+         'Tm02_s':{'standard_name': 'sea_surface_swell_wave_mean_period_from_variance_spectral_density_second_frequency_moment',
+                   'short_name': 'swell mean period',
+                   'units': 's',
+                    'model_name': 'VTM02_SW'},
          'DDM_s': {'standard_name': 'sea_surface_swell_wave_from_direction',
                    'short_name': 'swell mean direction',
                    'units': 'degree',
@@ -122,8 +122,6 @@ MWAM8 = {'Hs':    {'standard_name': 'sea_surface_wave_significant_height',
                    'convention':  'oceanographic'}} 
 
 
-#MWAM10 = MWAM4
-MWAM8 = MWAM4
 EXP=MWAM4
 
 ECWAM =    {'Hs':    {'standard_name': 'sea_surface_wave_significant_height',

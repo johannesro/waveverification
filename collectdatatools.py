@@ -46,7 +46,7 @@ class validationfile():
             mstr = self.nc.models
             self.models = mstr.strip().split(' ')
         self.time = netCDF4.num2date(self.nc.variables['time'][:], self.nc.variables['time'].units)
-#
+
     def create_file(self):
         nc      = netCDF4.Dataset(self.filename,mode='w',format='NETCDF4')
         self.nc = nc

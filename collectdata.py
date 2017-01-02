@@ -36,8 +36,8 @@ collectobservation = True
 # which model to process
 models = ['AROME', 'MWAM4', 'MWAM8', 'ECWAM', 'EXP']
 
-outpath = '/disk1/data'
-#outpath = '/lustre/storeA/project/fou/hi/waveverification/data'
+#outpath = '/disk1/data'
+outpath = '/lustre/storeB/project/fou/hi/waveverification/data'
 
 # 
 # get parameters from calling script/user:

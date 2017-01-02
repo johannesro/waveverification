@@ -6,7 +6,7 @@
 #$ -q ded-parallel.q
 #$ -M johannesro@met.no
 #$ -m abe
-#$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
+#$ -o /lustre/storeB/project/fou/hi/waveverification/logs/
 #$ -cwd 
 #$ -j y
 # ---------------------------
@@ -22,14 +22,14 @@ export R_LIBS=/modules/trusty/R/3.2.1/lib/R
 ./validate.py
 
 # update webpage
-cd /lustre/storeA/project/fou/hi/waveverification/website
+cd /lustre/storeB/project/fou/hi/waveverification/website
 
 ./makepage.sh 
 ./makepage_DD.sh 
 ./makeindex.sh 
 
 # upload webpage
-cd /lustre/storeA/project/fou/hi/waveverification
+cd /lustre/storeB/project/fou/hi/waveverification
 ./upload.sh
 
 

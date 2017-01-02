@@ -33,18 +33,6 @@ from mpl_toolkits.basemap import Basemap #package for map projection
 import config
 #import sphrot
 
-# lists are now in config.py
-# variable list for ECMWF netcdf files
-#ECvardict ={ 'Hs':  'significant_wave_height', 
-#        'Tp':  'peak_wave_period', 
-#	'Tm02': 'mean_wave_period',
-#	'DDM': 'wave_direction',
-#	'Hs_s': 'significant_swell_wave_height',
-#	'Tm02_s': 'sea_surface_swell_wave_period', # or is this Tp_s?
-#	'DDM_s': 'sea_surface_swell_wave_to_direction'}
-#MWAMvardict = { 'Hs':'hs', 'Tp':'tp', 'Tp_s':'tp_swell', 'Tm02':'tm2', 'DDM':'thq', 'Hs_s':'hs_swell', 'Tm02_s':'tm2_swell', 'DDM_s':'thq_swell', 'FF':'ff', 'DD':'dd'}
-#WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
-
 ECvardict={}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
@@ -106,33 +94,6 @@ def AROME_modrun(location, run, varnamelist, step=1):
        datadict = {'time':nan,'FF':nan, 'DD':nan, 'x_wind_10m':nan, 'y_wind_10m':nan}
     return datadict
 
-
-def LAWAM_modrun(location, run, varnamelist, step=1):
-    '''
-    location: (lat, lon) touple or list
-    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
-    '''
-    # ensure correct formats
-    location = list(location)
-    # check file, preferably from opdata
-    filename=run.strftime("/disk4/ECMWF_LAWAM/LAW_wave_%Y%m%d_%H.nc")
-    print(' ')
-    print('reading '+filename)
-    if os.path.isfile(filename):
-        ecdatadict = nctimeseries(filename, ECvardict.values(), location)
-        datadict = {'time':ecdatadict['time']}
-        for varname, ecname in ECvardict.iteritems():
-            datadict.update({varname: ecdatadict[ecname]})
-    else:
-       print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(241)*sp.nan
-       datadict = {'time':nan}
-       for varname in ECvardict.keys():
-           datadict.update({varname: nan})
-    return datadict
-
-
-
 def ECWAM_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
@@ -146,7 +107,7 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
     print('reading '+filename)
     if os.path.isfile(filename):
         modvars = [ config.ECWAM[var]['model_name'] for var in config.ECWAM.keys()]
-        ecdatadict = nctimeseries(filename, modvars.values(), location)
+        ecdatadict = nctimeseries(filename, modvars, location)
         datadict = {'time':ecdatadict['time']}
         for varname, specs in config.ECWAM.iteritems():
             ecname = specs['model_name']
@@ -232,8 +193,6 @@ def MWAM8_modrun(location, run, varnamelist, step=1):
     if not os.path.isfile(filename):
         #filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
         filename = run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT06Z.nc")
-    print(' ')
-    print('reading '+filename)
     if os.path.isfile(filename):
         modvars = [ config.MWAM8[var]['model_name'] for var in config.MWAM8.keys()]
         MWdatadict = nctimeseries(filename, modvars, location)
