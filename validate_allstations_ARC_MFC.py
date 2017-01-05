@@ -20,7 +20,8 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
 interactive=True
 
-timeplist=['201609','201610','201611']
+timeplist=['201609','201610','201611','201612']
+
 timestr='2016 Sep-Nov'
 
 print('time: '+timestr)
@@ -29,8 +30,8 @@ print('time: '+timestr)
 # plotpath
 #ppath = '/vol/hindcast3/waveverification/'+timep+'/'
 #ppath = '/lustre/storeA/project/fou/hi/waveverification/'+timep+'/'
-ppath = '/disk1/anac/waveverifiction/'
-#ppath = '/home/johannesro/'
+#ppath = '/disk1/anac/waveverifiction/'
+ppath = '/home/johannesro/'
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
