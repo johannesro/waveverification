@@ -30,11 +30,11 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 # user parameters
 #
 
-collectsubjective = True
+collectsubjective = False
 collectobservation = True
 
 # which model to process
-models = ['AROME', 'MWAM4', 'MWAM8', 'ECWAM', 'EXP']
+models = ['AROME', 'MWAM4', 'MWAM8', 'ECWAM']
 
 #outpath = '/disk1/data'
 outpath = '/lustre/storeB/project/fou/hi/waveverification/data'
@@ -87,7 +87,10 @@ for station, coordinate in locations.iteritems():
     stationstartday, stationstarttime, stationnumdays = startday, starttime, numdays # these parameters may be different for each station!
     if updatemode:
         print(int(stafile.nc.last_update_day))
-        stationstartday = int(stafile.nc.last_update_day) + 1
+        stationstartday = int(stafile.nc.last_update_day) + 1 # get last day with data in nc file
+        if stationstartday > calendar.monthrange(startyear, startmonth)[1]:
+            print('station file already completed until day %s' % str(stationstartday))
+            continue
         stationstarttime = dt.datetime(startyear,startmonth,stationstartday,0)
         stationnumdays = numdays - stationstartday + 1 # number of days to be processed
     

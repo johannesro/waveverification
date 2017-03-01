@@ -26,7 +26,6 @@ import scipy.ndimage as nd
 import os
 import d22 # modlue for reading .d22 files from offshore stations
 import netCDF4 as nc4 #import Dataset, num2date, date2num
-import MySQLdb
 import dataanalysis as da
 import pylab as pl
 from mpl_toolkits.basemap import Basemap #package for map projection
@@ -339,6 +338,7 @@ def DD_FF(u,v,met=True):
 
 
 def subjectiveforecast(runtime, station, varlist):
+    import MySQLdb
     varid={'Hs': 200, 'FF':298, 'DD':299, 'Tp':201, 'Tm02':203}
     runstr = runtime.isoformat(sep=' ')
     if station=='ekofisk' or station=='ekofiskL':
