@@ -77,6 +77,7 @@ def forecastskillplot(obs, var, reinitializationstep, statfunc, color='k', label
     stat = [ statfunc(*returnclean(obs,var[i])) for i in  range(var.shape[0]) ]
     ax.plot(leadtime, stat, color=color, label=label,lw=2)
     ax.set_xlabel('model lead time')
+    return leadtime, stat
      
 
 def rmsd(a,b):

@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 # ./validate 201409
-import scipy as sp # scientific function
+import scipy as sp
 import numpy as np
-import numpy.ma as ma # dealing with masked arrays
+#import numpy.ma as ma
 import matplotlib
-#matplotlib.use('Agg')
-import pylab as pl # for plotting
+matplotlib.use('Agg')
+import pylab as pl
 from netCDF4 import Dataset, MFDataset, MFTime, date2num, num2date
 import dataanalysis as da
-import os # communicate with the OS
-import datetime as dt # dealing with time
+import os
+import datetime as dt
 import validationtools as vt
 from stationlist import ARCMFClocations as locations
 from stationlist import WMsensors, bestWMsensor
 import sys
+from collectdatatools import validationfile
 #import calendar
 
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
@@ -23,35 +24,43 @@ interactive=True
 timeplist=['201704','201705','201706']
 
 timestr='2017 Apr-Jun'
+timestrt='2017_Apr-Jun'
+
 
 print('time: '+timestr)
 
 
 # plotpath
 #ppath = '/vol/hindcast3/waveverification/'+timep+'/'
-#ppath = '/lustre/storeA/project/fou/hi/waveverification/'+timep+'/'
-#ppath = '/disk1/anac/waveverifiction/'
-ppath = '/home/johannesro/'
+ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
 
-def select_var_from_models(G,varname):
+def select_var_from_models(vf,varname):
     modeldata={}
-    for j, gname in enumerate(G.keys()):
-        if gname=='OBS_d22':
-            continue
+    for gname in vf.models:
         try:
-            var = G[gname].variables[varname][:]
-            var[var.mask==True]=sp.nan
+            mod = vf.get_modelgroup(gname,create=False)
+            varraw = mod[varname][:]
+            try:
+                var = varraw.data
+                var[varraw.mask==True]=sp.nan
+            except AttributeError:
+                var = varraw
+            #
+            # fill data gap in second forecast range
+            #
+            var[1] = 0.5*(var[0]+var[2])
+            #
             # check if we are dealing with directions and ensure meteorological convention
-            if (G[gname].variables[varname].units[0:6] == 'degree'):
-                try:
-                    if (G[gname].variables[varname].Convention=='oceanographic'):
-                        var=var+180
-                        var[var>360.]=var[var>360.]-360.
-                except AttributeError:
-                    var=var
+            #if (G[gname].variables[varname].units[0:6] == 'degree'):
+            #    try:
+            #        if (G[gname].variables[varname].Convention=='oceanographic'):
+            #            var=var+180
+            #            var[var>360.]=var[var>360.]-360.
+            #    except AttributeError:
+            #        var=var
         except KeyError:
             continue
         if sp.isnan(var[0]).all():
@@ -71,7 +80,11 @@ mod_all = {'ECWAM':[],'MWAM8':[]}
 
 os.system('mkdir -p '+ppath)
 
-for station, parameters in locations.iteritems(): # loop over stations
+for station, parameters in locations.iteritems():
+    print(' ')
+    print('verification of station '+station+' for '+timestr)
+   
+
     obs_long = []
     mod_long = {'ECWAM':[],'MWAM8':[]}
 
@@ -80,12 +93,15 @@ for station, parameters in locations.iteritems(): # loop over stations
         print ' '
         print 'read data for station '+station+' for '+timep
 
+        # open file
         path = '/lustre/storeA/project/fou/hi/waveverification/data'
-        filename = station+'_'+timep+'.nc'
-        nc       = Dataset(os.path.join(path,filename),mode='r')
-        time = num2date(nc.variables['time'][:],nc.variables['time'].units)
-        G = nc.groups
-        OBS  = G['OBS_d22']
+        
+        year,month = int(timep[0:4]),int(timep[4:6])
+        vf = validationfile(path,station,year,month)
+        time = vf.time
+        OBS  = vf.get_obs()
+
+
 
     # Specify which WM sensor to use for validation
         try:
@@ -93,17 +109,20 @@ for station, parameters in locations.iteritems(): # loop over stations
         except KeyError:
             sensor = 0
 
-        obs = ma.array(OBS.variables[varname][sensor])
-        obs.data[obs.mask==True] = sp.nan # make sure all masked values are nan 
-        obs.mask = sp.logical_or(obs.mask, sp.isnan(obs.data))
-        units = OBS.variables[varname].units
-
-        if (all(sp.isnan(obs.data)) or all(obs.mask==True)):
-            print 'no data for '+station+' during '+timestr
+        obsraw = OBS[varname][sensor]
+        try: 
+            obs = obsraw.data 
+            obs[obsraw.mask==True] = sp.nan # make sure all masked values are nan 
+        except AttributeError:
+            obs = obsraw
+        units = vf.nc.variables[varname+'_OBS'].units
+     
+        if all(sp.isnan(obs.data)):
+            print('no data for '+station+' during '+timestr)
             continue
 
         # select variable from  each model:
-        modeldata = select_var_from_models(G,varname)
+        modeldata = select_var_from_models(vf,varname)
         #        
         #nc.close()
         #
@@ -144,7 +163,7 @@ ax1=fig.add_subplot(121)
 ax2=fig.add_subplot(122)
 for gname, var in modeldata.iteritems():
    var2 = np.transpose(var,axes=[2,1,0])
-   vt.scqqplot(obs[:,:-24], var2[:,:-24,0],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)# , prob=sp.arange(0.001,0.999,0.001))
+   vt.scqqplot(obs[:,:-24].flatten(), var2[:,:-24,0].flatten(),color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)
 ax1.legend(loc='lower right')
 ax1.set_title('analysis '+varname+' ['+units+']'+' '+timestr)
 pfilename = 'allstations_'+varname+'_scatterqq_analysis.png'
@@ -160,7 +179,7 @@ ax1=fig.add_subplot(121)
 ax2=fig.add_subplot(122)
 for gname, var in modeldata.iteritems():
    var2 = np.transpose(var,axes=[2,1,0])
-   vt.scqqplot(obs[:,:-24], var2[:,:-24,day2index[gname]],color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)# , prob=sp.arange(0.001,0.999,0.001))
+   vt.scqqplot(obs[:,:-24].flatten(), var2[:,:-24,day2index[gname]].flatten(),color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)# , prob=sp.arange(0.001,0.999,0.001))
 ax1.legend(loc='lower right')
 ax1.set_title('2-day forecast '+varname+' ['+units+']'+' '+timestr)
 pfilename = 'allstations_'+varname+'_scatterqq_forecast48h.png'
@@ -182,14 +201,16 @@ ax1.set_title('allstations '+varname+' forecast skill'+' '+timestr)
 for gname, var in modeldata.iteritems():
     print gname
     #vart = np.transpose(var,axes=[0,1,2])
-    amerr = vt.forecastskillplot(obs.T, var, G[gname].getncattr('reinitialization_step'), vt.amerr, color=ct[gname],  label=gname, ax=ax1)
-    rms = vt.forecastskillplot(obs.T, var, G[gname].getncattr('reinitialization_step'), vt.rmse, color=ct[gname],  label=gname, ax=ax2)
+    reini = vf.nc.getncattr(gname+'_reinitialization_step')
+    leadtime, amerr = vt.forecastskillplot(obs.T, var, reini, vt.amerr, color=ct[gname],  label=gname, ax=ax1)
+    leadtime, rms = vt.forecastskillplot(obs.T, var, reini, vt.rmse, color=ct[gname],  label=gname, ax=ax2)
     print 'RMS'
     print rms
-    bias = vt.forecastskillplot(-obs.T, -var, G[gname].getncattr('reinitialization_step'), vt.bias, color=ct[gname],  label=gname, ax=ax3)
-    corr = vt.forecastskillplot(obs.T, var, G[gname].getncattr('reinitialization_step'), vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
+    leadtime, bias = vt.forecastskillplot(-obs.T, -var, reini, vt.bias, color=ct[gname],  label=gname, ax=ax3)
+    leadtime, corr = vt.forecastskillplot(obs.T, var, reini, vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
     print 'correlation'
     print corr
+
 ax1.legend(loc='lower right')
 ax1.set_ylabel('MAE ['+units+']')
 ax2.set_ylabel('RMSE ['+units+']')
