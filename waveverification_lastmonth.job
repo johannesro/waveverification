@@ -1,0 +1,48 @@
+#!/bin/bash -f
+#$ -N waveverif_lm
+#$ -l h_rt=10:00:00
+#$ -S /bin/bash
+#$ -pe mpi 1
+#$ -q ded-parallel.q
+#$ -M johannesro@met.no
+#$ -m abe
+#$ -o /lustre/storeB/project/fou/hi/waveverification/logs/
+#$ -cwd 
+#$ -j y
+# ---------------------------
+
+echo "Got $NSLOTS slots."
+
+#export R_LIBS=/modules/trusty/R/3.2.1/lib/R
+
+# get current month
+printf -v year %2.2i `date +%Y`
+printf -v month %2.2i `date +%m`
+
+# calculate which is the previous month:
+lmonth=`date -d "${year}/${month}/01-1 days" +"%m"`
+lyear=`date -d "${year}/${month}/01-1 days" +"%Y"`
+
+echo waveverification for ${lyear} ${lmonth} 
+
+cd /home/johannesro/waveverification
+
+# gather data
+./collectdata.py  ${lyear} ${lmonth} > /home/johannesro/waveverification/collectdata_lastmonth.log
+
+# make plots
+./validate.py  ${lyear} ${lmonth} 
+
+# update webpage
+cd /lustre/storeB/project/fou/hi/waveverification/website
+
+./makepage.sh  ${lyear} ${lmonth} 
+./makepage_DD.sh  ${lyear} ${lmonth} 
+./makeindex.sh  ${lyear} ${lmonth} 
+
+# upload webpage
+cd /lustre/storeB/project/fou/hi/waveverification
+./upload.sh
+
+
+
