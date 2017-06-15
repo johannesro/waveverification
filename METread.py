@@ -26,29 +26,14 @@ import scipy.ndimage as nd
 import os
 import d22 # modlue for reading .d22 files from offshore stations
 import netCDF4 as nc4 #import Dataset, num2date, date2num
-import MySQLdb
 import dataanalysis as da
 import pylab as pl
 from mpl_toolkits.basemap import Basemap #package for map projection
+import config
 #import sphrot
 
 
-# variable list for ECMWF netcdf files
-# should better list these names in variables.py!
-ECvardict ={ 'Hs':  'significant_wave_height', 
-        'Tp':  'peak_wave_period', 
-	'Tm02': 'mean_wave_period',
-	'DDM': 'wave_direction',
-	'Hs_s': 'significant_swell_wave_height',
-	'Tm02_s': 'sea_surface_swell_wave_period', # or is this Tp_s?
-	'DDM_s': 'sea_surface_swell_wave_to_direction'}
-
-MWAMvardict = { 'Hs':'hs', 'Tp':'tp', 'Tp_s':'tp_swell', 'Tm02':'tm2', 'DDM':'thq', 'Hs_s':'hs_swell', 'Tm02_s':'tm2_swell', 'DDM_s':'thq_swell', 'FF':'ff', 'DD':'dd'}
-
-MWAM8vardict = { 'Hs':'VHM0', 'Tp':'VTPK', 'Tm02':'VTM02', 'DDM':'VMDR', 'Hs_s':'VHM0_SW', 'Tm02_s':'VTM02_SW', 'DDM_s':'VMDR_SW', 'DDP':'VPED', 'FF':'ff', 'DD':'dd'}
-
-
-WAMAROMEvardict = {'Hs': 'significant_wave_height', 'FF':'wind_speed_10m'}
+ECvardict={}
 
 def obs_d22(station, day, numdays=1, varlist=[]):
     '''
@@ -109,83 +94,6 @@ def AROME_modrun(location, run, varnamelist, step=1):
        datadict = {'time':nan,'FF':nan, 'DD':nan, 'x_wind_10m':nan, 'y_wind_10m':nan}
     return datadict
 
-def WAMAROME2W_modrun(location, run, varnamelist, step=1):
-    '''
-    location: (lat, lon) touple or list
-    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
-    '''
-    # ensure correct formats
-    location = list(location)
-    #varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
-    # check file, preferably from opdata
-    filename=run.strftime("/vol/fou/atmos2/jakobks/MyWave/WAM_2WCoupled/WAM_2WCoupled_%Y%m%d00.nc")
-    print(' ')
-    print('reading '+filename)
-    if os.path.isfile(filename):
-        #datadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
-        WAdatadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
-        datadict = {'time':WAdatadict['time']}
-        for varname, WAname in WAMAROMEvardict.iteritems():
-            datadict.update({varname: WAdatadict[WAname]})
-        #datadict['DD'], datadict['FF'] = DD_FF(datadict['x_wind_10m'],datadict['y_wind_10m'])
-    else:
-       print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(49)*sp.nan
-       datadict = {'time':nan,'FF':nan, 'Hs':nan}#, 'x_wind_10m':nan, 'y_wind_10m':nan}
-    return datadict
-
-def WAMAROME1W_modrun(location, run, varnamelist, step=1):
-    '''
-    location: (lat, lon) touple or list
-    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
-    '''
-    # ensure correct formats
-    location = list(location)
-    #varnamelist = varnamelist+['x_wind_10m','y_wind_10m']
-    # check file, preferably from opdata
-    filename=run.strftime("/vol/fou/atmos2/jakobks/MyWave/WAM_1WCoupled/WAM_1WCoupled_%Y%m%d00.nc")
-    print(' ')
-    print('reading '+filename)
-    if os.path.isfile(filename):
-        #datadict = nctimeseries(filename, varnamelist, location)
-        WAdatadict = nctimeseries(filename, WAMAROMEvardict.values(), location)
-        datadict = {'time':WAdatadict['time']}
-        for varname, WAname in WAMAROMEvardict.iteritems():
-            datadict.update({varname: WAdatadict[WAname]})
-        #datadict['DD'], datadict['FF'] = DD_FF(datadict['x_wind_10m'],datadict['y_wind_10m'])
-    else:
-       print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(49)*sp.nan
-       datadict = {'time':nan,'FF':nan, 'Hs':nan}#, 'x_wind_10m':nan, 'y_wind_10m':nan}
-    return datadict
-
-
-def LAWAM_modrun(location, run, varnamelist, step=1):
-    '''
-    location: (lat, lon) touple or list
-    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
-    '''
-    # ensure correct formats
-    location = list(location)
-    # check file, preferably from opdata
-    filename=run.strftime("/disk4/ECMWF_LAWAM/LAW_wave_%Y%m%d_%H.nc")
-    print(' ')
-    print('reading '+filename)
-    if os.path.isfile(filename):
-        ecdatadict = nctimeseries(filename, ECvardict.values(), location)
-        datadict = {'time':ecdatadict['time']}
-        for varname, ecname in ECvardict.iteritems():
-            datadict.update({varname: ecdatadict[ecname]})
-    else:
-       print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(241)*sp.nan
-       datadict = {'time':nan}
-       for varname in ECvardict.keys():
-           datadict.update({varname: nan})
-    return datadict
-
-
-
 def ECWAM_modrun(location, run, varnamelist, step=1):
     '''
     location: (lat, lon) touple or list
@@ -198,45 +106,17 @@ def ECWAM_modrun(location, run, varnamelist, step=1):
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        ecdatadict = nctimeseries(filename, ECvardict.values(), location)
+        modvars = [ config.ECWAM[var]['model_name'] for var in config.ECWAM.keys()]
+        ecdatadict = nctimeseries(filename, modvars, location)
         datadict = {'time':ecdatadict['time']}
-        for varname, ecname in ECvardict.iteritems():
+        for varname, specs in config.ECWAM.iteritems():
+            ecname = specs['model_name']
             datadict.update({varname: ecdatadict[ecname]})
     else:
        print('file '+filename+' does not exist; returning missing values')
        nan = sp.ones(241)*sp.nan
        datadict = {'time':nan}
-       for varname in ECvardict.keys():
-           datadict.update({varname: nan})
-    return datadict
-
-def MWAM10_modrun(location, run, varnamelist, step=1):
-    '''
-    location: (lat, lon) touple or list
-    run: datetime object of model run initialization time (should be 00, 03, 06,... hours)
-    '''
-    # ensure correct formats
-    location = list(location)
-    # check file, preferably from opdata
-    filename = run.strftime("/vol/data/wave/MyWave_wam10_WAVE_%Y%m%dT%HZ.nc")
-    if not os.path.isfile(filename):
-        filename = run.strftime("/vol/hindcast3/waveverification/mywaveWAM_archive/MyWave_wam4_WAVE_%Y%m%dT%HZ.nc")
-    gfile = nc4.Dataset('/lustre/storeA/project/fou/hi/waveverification/WAM10grid.nc')  #this step could later be droppet, if lat/lon info are available in operational files
-    lat, lon = gfile.variables['latitude'][:], gfile.variables['longitude'][:]
-    gfile.close()
-    print(' ')
-    print('reading '+filename)
-    if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location, grid=(lat,lon))
-        #print MWdatadict
-        datadict = {'time': MWdatadict['time']}
-        for varname, MWAMname in MWAMvardict.iteritems():
-            datadict.update({varname: MWdatadict[MWAMname]})
-    else:
-       print('file '+filename+' does not exist; returning missing values')
-       nan = sp.ones(67)*sp.nan
-       datadict = {'time':nan}
-       for varname in MWAMvardict.keys():
+       for varname in config.ECWAM.keys():
            datadict.update({varname: nan})
     return datadict
 
@@ -259,15 +139,17 @@ def MWAM4_modrun(location, run, varnamelist, step=1):
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location)#, grid=(lat,lon))
+        modvars = [ config.MWAM4[var]['model_name'] for var in config.MWAM4.keys()]
+        MWdatadict = nctimeseries(filename, modvars, location)
         datadict = {'time': MWdatadict['time']}
-        for varname, MWAMname in MWAMvardict.iteritems():
-            datadict.update({varname: MWdatadict[MWAMname]})
+        for varname, specs in config.MWAM4.iteritems():
+            MWAM4name = specs['model_name']
+            datadict.update({varname: MWdatadict[MWAM4name]})
     else:
        print('file '+filename+' does not exist; returning missing values')
        nan = sp.ones(67)*sp.nan
        datadict = {'time':nan}
-       for varname in MWAMvardict.keys():
+       for varname in config.MWAM4.keys():
            datadict.update({varname: nan})
     return datadict
 
@@ -283,19 +165,20 @@ def EXP_modrun(location, run, varnamelist, step=1):
     print(' ')
     print('reading '+filename)
     if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAMvardict.values(), location) #, grid=(lat,lon))
+        modvars = [ config.MWAM4[var]['model_name'] for var in config.MWAM4.keys()]
+        MWdatadict = nctimeseries(filename, modvars, location)
         #print MWdatadict
         datadict = {'time': MWdatadict['time']}
-        for varname, MWAMname in MWAMvardict.iteritems():
-            datadict.update({varname: MWdatadict[MWAMname]})
+        for varname, specs in config.MWAM4.iteritems():
+            MWAM4name = specs['model_name']
+            datadict.update({varname: MWdatadict[MWAM4name]})
     else:
        print('file '+filename+' does not exist; returning missing values')
        nan = sp.ones(67)*sp.nan
        datadict = {'time':nan}
-       for varname in MWAMvardict.keys():
+       for varname in config.MWAM4.keys():
            datadict.update({varname: nan})
     return datadict
-
 
 def MWAM8_modrun(location, run, varnamelist, step=1):
     '''
@@ -310,18 +193,18 @@ def MWAM8_modrun(location, run, varnamelist, step=1):
     if not os.path.isfile(filename):
         #filename = run.strftime("/starc/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT%HZ.nc")
         filename = run.strftime("/lustre/storeB/immutable/short-term-archive/DNMI_WAVE/%Y/%m/%d/MyWave_wam8_WAVE_%Y%m%dT06Z.nc")
-    print(' ')
-    print('reading '+filename)
     if os.path.isfile(filename):
-        MWdatadict = nctimeseries(filename, MWAM8vardict.values(), location)#, grid=(lat,lon))
+        modvars = [ config.MWAM8[var]['model_name'] for var in config.MWAM8.keys()]
+        MWdatadict = nctimeseries(filename, modvars, location)
         datadict = {'time': MWdatadict['time']}
-        for varname, MWAMname in MWAM8vardict.iteritems():
-            datadict.update({varname: MWdatadict[MWAMname]})
+        for varname, specs in config.MWAM8.iteritems():
+            MWAM8name = specs['model_name']
+            datadict.update({varname: MWdatadict[MWAM8name]})
     else:
        print('file '+filename+' does not exist; returning missing values')
        nan = sp.ones(67)*sp.nan
        datadict = {'time':nan}
-       for varname in MWAMvardict.keys():
+       for varname in config.MWAM8.keys():
            datadict.update({varname: nan})
     return datadict
 
@@ -456,6 +339,7 @@ def DD_FF(u,v,met=True):
 
 
 def subjectiveforecast(runtime, station, varlist):
+    import MySQLdb
     varid={'Hs': 200, 'FF':298, 'DD':299, 'Tp':201, 'Tm02':203}
     runstr = runtime.isoformat(sep=' ')
     if station=='ekofisk' or station=='ekofiskL':

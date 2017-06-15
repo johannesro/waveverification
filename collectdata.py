@@ -17,30 +17,27 @@ import netCDF4 as nc4 #import Dataset, num2date, date2num
 import datetime as dt
 import calendar
 import METread
-#import METread_rpy as METread
 import pylab as pl
 import os
 import sys
-#from sys import argv
 from stationlist import locations as locations
 import collectdatatools as cdt
+import config 
+
+print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
 #
 # user parameters
 #
 
-print("The Python version is %s.%s.%s" % sys.version_info[:3])
-
-collectsubjective = True
+collectsubjective = False
 collectobservation = True
 
 # which model to process
-models = ['AROME', 'MWAM4', 'EXP', 'MWAM8', 'ECWAM']
+models = ['AROME', 'MWAM4', 'MWAM8', 'ECWAM']
 
-# how may output time steps (usually in hours) in each model run
-modlength = {'WAM4': 67, 'WAM10':67, 'AROME':67, 'HIRLAM8':67, 'LAWAM':67, 'ECWAM':241, 'MWAM4':67, 'MWAM8':241, 'EXP':67, 'WAMAROME2W':67, 'WAMAROME1W':67}
-
-
+#outpath = '/disk1/data'
+outpath = '/lustre/storeA/project/fou/hi/waveverification/data'
 
 # 
 # get parameters from calling script/user:
@@ -71,15 +68,11 @@ else:
         else:
             numdays = numdays + diff.days # include today's forecasts as well.
 
-print numdays
-print updatemode
-#modlength = 67 # hours in each model run
-#outpath = '/vol/hindcast3/waveverification/data'
-outpath = '/lustre/storeA/project/fou/hi/waveverification/data'
-
 # errors to be catched during processing:
-errlist = IOError, EOFError, KeyError, IndexError
+errlist = IOError, EOFError, KeyError, IndexError, RuntimeError
 
+print 'number of days to process: %i' % numdays
+print 'updatemode switch %s' % str(updatemode)
 
 for station, coordinate in locations.iteritems():
     month = startmonth
@@ -94,7 +87,10 @@ for station, coordinate in locations.iteritems():
     stationstartday, stationstarttime, stationnumdays = startday, starttime, numdays # these parameters may be different for each station!
     if updatemode:
         print(int(stafile.nc.last_update_day))
-        stationstartday = int(stafile.nc.last_update_day) + 1
+        stationstartday = int(stafile.nc.last_update_day) + 1 # get last day with data in nc file
+        if stationstartday > calendar.monthrange(startyear, startmonth)[1]:
+            print('station file already completed until day %s' % str(stationstartday))
+            continue
         stationstarttime = dt.datetime(startyear,startmonth,stationstartday,0)
         stationnumdays = numdays - stationstartday + 1 # number of days to be processed
     
@@ -102,7 +98,7 @@ for station, coordinate in locations.iteritems():
     print('Collect station data starting from '+str(stationstarttime)+' for '+str(stationnumdays)+' days.')
     print(' ')
 
-    gOBS    = stafile.nc.groups['OBS_d22'].variables # could be stafile.OBS_d22 ??
+    gOBS    = stafile.get_obs() 
     if collectsubjective and station in cdt.subjlist:
         #gSubj = stafile.nc.groups['Subjective'].variables
         gSubj = stafile.get_subjective()
@@ -113,7 +109,8 @@ for station, coordinate in locations.iteritems():
 #
     if collectobservation:
         try:
-            print('read d22 files ')
+            print(' ')
+            print('    read d22 files ')
             obs_d22 = METread.obs_d22(station, stationstarttime, numdays=stationnumdays)
             for i,time in enumerate(obs_d22['time']): # do each time step seperately because some steps might be missing
                 nci = METread.find_pos1d1(pl.date2num(stafile.time),pl.date2num(time))
@@ -134,9 +131,11 @@ for station, coordinate in locations.iteritems():
 #
     if collectsubjective and station in cdt.subjlist:
         try:
+            print(' ')
+            print('    arange Subjective forecasts')
             cdt.collectsubjective(startyear, startmonth, stationstartday, gSubj, station, fstep=6, numdays=stationnumdays)
         except errlist:
-            print('subjective analysis not read')
+            print('    subjective analysis not read')
         finally:
             stafile.nc.sync()
 
@@ -145,10 +144,16 @@ for station, coordinate in locations.iteritems():
 #
     for mod in models:
         gmod = stafile.get_modelgroup(mod)
+        print ' '
+        print '    arange station %s data for model %s  ' % (station, mod)
         fstep = cdt.reini_dict[mod]
         try:
-            ml = modlength[mod]
-            cdt.collect(startyear, startmonth, stationstartday, gmod, getattr(METread,mod+'_modrun'), locations[station], fstep=fstep, modlength=ml, numdays=stationnumdays)
+            ml = config.modlength[mod] # number of hours in each modelrun
+            if mod == 'MWAM8' or mod == 'ECWAM':
+                np = 10 # number of days to go back into previous month
+            else:
+                np = 3
+            cdt.collect(startyear, startmonth, stationstartday, gmod, getattr(METread,mod+'_modrun'), locations[station], fstep=fstep, modlength=ml, numdays=stationnumdays, numdays_previousmonth=np)
         except errlist:
             print('model data '+mod+' not processed')
         finally:

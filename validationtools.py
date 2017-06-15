@@ -30,15 +30,16 @@ def finite(v):
 
 def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0.01, 1., 0.01)):
     if (ax1 == None or ax2 == None):
-        fig=figure(figsize=[10,5])
+        fig=pl.figure(figsize=[10,5])
         ax1=fig.add_subplot(121)
         ax2=fig.add_subplot(122)
-    obsc,varc = returnclean(obs,var) # only use times when both obs and model data are available
-    if len(obsc)==0: # exit function of no common data is available
+    #obsc,varc = returnclean(obs,var) # only use times when both obs and model data are available
+    if len(obs)==0: # exit function of no common data is available
         return
-    maxval = max(list(obsc)+list(varc))
-    minval = min(list(obsc)+list(varc))
-    ax1.plot(obsc, varc, '.', color=color, label=label)#+' N='+str(len(obsc)))
+
+    maxval = max(list(obs)+list(var))
+    minval = min(list(obs)+list(var))
+    ax1.plot(obs, var, '.', color=color, label=label+' N='+str(len(obs)))
     ax1.plot([minval,maxval],[minval,maxval],'-r')
     ax1.set_ylabel('model')
     ax1.set_xlabel('observation')
@@ -48,8 +49,8 @@ def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0
         ax1.legend(loc='lower right',fontsize='small')          
     except TypeError:
         ax1.legend(loc='lower right')          
-    obsq = sp.stats.mstats.mquantiles(finite(obsc),prob=prob)
-    varq = sp.stats.mstats.mquantiles(finite(varc),prob=prob)
+    obsq = sp.stats.mstats.mquantiles(finite(obs),prob=prob)
+    varq = sp.stats.mstats.mquantiles(finite(var),prob=prob)
     ax2.plot(obsq, varq, 'x',ms=5,mew=2, color=color, label=label)
     ax2.plot([minval,maxval],[minval,maxval],'-r')
     ax2.set_ylabel('model')
