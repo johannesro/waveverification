@@ -76,7 +76,7 @@ def read_d22(station,start=None,end=None):
             except IOError:
                 #print('try to read d22 from starc')
                 try:
-                    f = open("/lustre/storeB/project/fou/hi/waveverification/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")
+                    f = open("/lustre/WATZMANN/storeB/immutable/short-term-archive/DNMI_OFFSHORE/"+rig+"/d22/"+dy+".d22", "r")
                 except IOError:
                     print('no d22 file for station '+station+' at '+dy)
                     continue
