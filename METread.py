@@ -32,6 +32,7 @@ from mpl_toolkits.basemap import Basemap #package for map projection
 import config
 #import sphrot
 
+
 ECvardict={}
 
 def obs_d22(station, day, numdays=1, varlist=[]):

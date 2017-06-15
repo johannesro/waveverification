@@ -36,6 +36,7 @@ def scqqplot(obs, var, label=' ',color='k', ax1=None, ax2=None, prob=sp.arange(0
     #obsc,varc = returnclean(obs,var) # only use times when both obs and model data are available
     if len(obs)==0: # exit function of no common data is available
         return
+
     maxval = max(list(obs)+list(var))
     minval = min(list(obs)+list(var))
     ax1.plot(obs, var, '.', color=color, label=label+' N='+str(len(obs)))
