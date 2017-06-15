@@ -20,9 +20,9 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
 interactive=True
 
-timeplist=['201609','201610','201611','201612']
+timeplist=['201704','201705','201706']
 
-timestr='2016 Sep-Nov'
+timestr='2017 Apr-Jun'
 
 print('time: '+timestr)
 
