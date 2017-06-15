@@ -21,17 +21,15 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
 interactive=True
 
+
 timeplist=['201704','201705','201706']
 
 timestr='2017 Apr-Jun'
 timestrt='2017_Apr-Jun'
-
-
 print('time: '+timestr)
 
 
 # plotpath
-#ppath = '/vol/hindcast3/waveverification/'+timep+'/'
 ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
 
 # set color table for models

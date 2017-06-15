@@ -58,6 +58,7 @@ ARCMFClocations = {#'ekofisk':     [56.54, 3.21],
             'stafjorda':    [61.25, 1.85], # - 1 1 
 #            'statfjordb':   [61.20, 1.83], # 3 3 1 #no file for Mai 2017
             'trolla':       [60.64, 3.72], # 3 3 1 
+
 #            'trollb':       [60.77, 3.50], # no file for April 2017
 #            'trollc':       [60.89, 3.60], # no file for April 2017
 #            'ula':          [57.10 ,2.85], # 3 3 1 
