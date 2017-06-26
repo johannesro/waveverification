@@ -3,8 +3,8 @@
 import scipy as sp
 import numpy as np
 #import numpy.ma as ma
-import matplotlib
-matplotlib.use('Agg')
+
+
 import pylab as pl
 from netCDF4 import Dataset, MFDataset, MFTime, date2num, num2date
 import dataanalysis as da
@@ -72,9 +72,10 @@ minorLocator=dates.DayLocator(range(33))
 majorLocator=dates.DayLocator(range(5,31,5))
 fmt=dates.DateFormatter('%d.%m.%Y') 
 
-varname = 'Tm02'
+varname = 'Hs'
 obs_all = []
-mod_all = {'ECWAM':[],'MWAM8':[]}
+mod_all = {'MWAM8':[]}
+time_all = []
 
 os.system('mkdir -p '+ppath)
 
@@ -84,7 +85,7 @@ for station, parameters in locations.iteritems():
    
 
     obs_long = []
-    mod_long = {'ECWAM':[],'MWAM8':[]}
+    mod_long = {'MWAM8':[]}
 
 
     for timep in timeplist: # loop over months
@@ -98,6 +99,8 @@ for station, parameters in locations.iteritems():
         vf = validationfile(path,station,year,month)
         time = vf.time
         OBS  = vf.get_obs()
+        if station=='draugen':
+            time_all = time_all + list(time)
 
 
 
@@ -135,7 +138,7 @@ for station, parameters in locations.iteritems():
     for mod in mod_long.keys():
         mod_longa[mod] = np.concatenate(mod_long[mod],axis=1)
 
-    print '%s, %s' % (station, str(mod_long['ECWAM'][1].shape))
+    print '%s, %s' % (station, str(mod_long['MWAM8'][1].shape))
 
     # append to list for all stations:
     obs_all.append(obs_long)
@@ -151,96 +154,60 @@ for gname in mod_all.keys():
     modeldata[gname] = np.dstack(mod_all[gname])
 
 
-
-
-#
-# make scatter and qq plot
-#
-fig=pl.figure(figsize=[10,5])
-ax1=fig.add_subplot(121)
-ax2=fig.add_subplot(122)
-for gname, var in modeldata.iteritems():
-   var2 = np.transpose(var,axes=[2,1,0])
-   vt.scqqplot(obs[:,:-24].flatten(), var2[:,:-24,0].flatten(),color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)
-ax1.legend(loc='lower right')
-ax1.set_title('analysis '+varname+' ['+units+']'+' '+timestr)
-pfilename = 'allstations_'+varname+'_scatterqq_analysis.png'
-fig.tight_layout(pad=0.4)
-fig.savefig(os.path.join(ppath,pfilename))
-
-#
-# make scatter and qq plot for 2-day forecast
-#
-day2index={'MWAM8':2,'ECWAM':4}
-fig=pl.figure(figsize=[10,5])
-ax1=fig.add_subplot(121)
-ax2=fig.add_subplot(122)
-for gname, var in modeldata.iteritems():
-   var2 = np.transpose(var,axes=[2,1,0])
-   vt.scqqplot(obs[:,:-24].flatten(), var2[:,:-24,day2index[gname]].flatten(),color=ct[gname],  label=gname, ax1=ax1, ax2=ax2)# , prob=sp.arange(0.001,0.999,0.001))
-ax1.legend(loc='lower right')
-ax1.set_title('2-day forecast '+varname+' ['+units+']'+' '+timestr)
-pfilename = 'allstations_'+varname+'_scatterqq_forecast48h.png'
-fig.tight_layout(pad=0.4)
-fig.savefig(os.path.join(ppath,pfilename))
-
-
-
-#
-# plot statistics as function of forcast time
-#
-
-fig = pl.figure(figsize=[10,8])
-ax1 = fig.add_subplot(411)
-ax2 = fig.add_subplot(412)
-ax3 = fig.add_subplot(413)
-ax4 = fig.add_subplot(414)
-ax1.set_title('allstations '+varname+' forecast skill'+' '+timestr)
-for gname, var in modeldata.iteritems():
-    print gname
-    #vart = np.transpose(var,axes=[0,1,2])
-    reini = vf.nc.getncattr(gname+'_reinitialization_step')
-    leadtime, amerr = vt.forecastskillplot(obs.T, var, reini, vt.amerr, color=ct[gname],  label=gname, ax=ax1)
-    leadtime, rms = vt.forecastskillplot(obs.T, var, reini, vt.rmse, color=ct[gname],  label=gname, ax=ax2)
-    print 'RMS'
-    print rms
-    leadtime, bias = vt.forecastskillplot(-obs.T, -var, reini, vt.bias, color=ct[gname],  label=gname, ax=ax3)
-    leadtime, corr = vt.forecastskillplot(obs.T, var, reini, vt.pearsonr, color=ct[gname],  label=gname, ax=ax4)
-    print 'correlation'
-    print corr
-
-ax1.legend(loc='lower right')
-ax1.set_ylabel('MAE ['+units+']')
-ax2.set_ylabel('RMSE ['+units+']')
-ax3.set_ylabel('model bias ['+units+']')
-ax4.set_ylabel('cor. coef.')
-ax4.set_xlabel('model lead time [h]')
-ax1.set_xlim([0,5*24])
-ax1.set_xticks([24,48,72,96,120])
-ax2.set_xlim([0,5*24])
-ax2.set_xticks([24,48,72,96,120])
-ax3.set_xlim([0,5*24])
-ax3.set_xticks([24,48,72,96,120])
-ax4.set_xlim([0,5*24])
-ax4.set_xticks([24,48,72,96,120])
-
-fig.tight_layout(pad=0.2)
-pfilename = 'allstations_'+varname+'_forecastskill.png'
-fig.savefig(os.path.join(ppath,pfilename))
-
-
-var = modeldata['MWAM8']
+var = modeldata['MWAM8'].transpose(2,1,0)
 
 print('var.shape ', var.shape)
 print('obs.shape ', obs.shape)
 
-
-
-
-pl.show()
-
 #
 # compute statistics
 #
+
+# reshape time axis to join hours
+nhours = 6
+
+obsS = obs.reshape(obs.shape[0],nhours,obs.shape[1]/nhours)
+varS = var.reshape(var.shape[0],nhours,var.shape[1]/nhours,var.shape[2])
+
+time = time_all[::6]
+timeunit = "days since 2001-01-01 12:00:00 UTC"
+
+
+# produce netcdf file:
+nc = Dataset('Arc-MFC_quarterlyreport_wave.nc','w')
+
+ncdims = {'string_length':22, 'areas':1, 'metrics':3, 'surface':1, 'forecasts':10} # and time, unlim
+metric_names = ["number of data values", "root mean squared deviation", "bias"]
+
+nc.createDimension('time',size=None)
+for name,dim in ncdims.iteritems():
+    nc.createDimension(name,size=dim)
+
+nc_time = nc.createVariable('time',np.float,dimensions=('time'))
+nc_time[:] = date2num(time,units=timeunit)
+nc_time.units = timeunit
+nc_time.long_name = 'validity time'
+
+nc_metricnames = nc.createVariable('metric.names','str', dimensions=('metrics')) 
+nc_metricnames[:] = sp.array(metric_names)
+
+
+varlongname = {'Hs':'stats_sea_surface_significant_wave_height'}
+
+ncvar = nc.createVariable(varlongname[varname],np.float, dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'))
+
+# calculate statistics (bias and root-mean-square difference)
+
+for leadtime in range(10):
+    ncvar[:,leadtime,0,2,0] = sp.array([vt.bias( *vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])) for i in range(obsS.shape[2])])
+    ncvar[:,leadtime,0,1,0] = sp.array([vt.rmsd( *vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])) for i in range(obsS.shape[2])])
+    ncvar[:,leadtime,0,0,0] = sp.array([ len(vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])[1]) for i in range(obsS.shape[2])])
+
+nc.close()
+
+
+
+
+
 
 
