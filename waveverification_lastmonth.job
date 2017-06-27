@@ -33,6 +33,9 @@ cd /home/johannesro/waveverification
 # make plots
 ./validate.py  ${lyear} ${lmonth} 
 
+# make quarterly Arc-MFC report file
+./quarterly_arcmfc_report.py
+
 # update webpage
 cd /lustre/storeA/project/fou/hi/waveverification/website
 
