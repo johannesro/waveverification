@@ -2,11 +2,8 @@
 # ./validate 201409
 import scipy as sp
 import numpy as np
-#import numpy.ma as ma
-
-
 import pylab as pl
-from netCDF4 import Dataset, MFDataset, MFTime, date2num, num2date
+import netCDF4
 import dataanalysis as da
 import os
 import datetime as dt
@@ -15,14 +12,10 @@ from stationlist import ARCMFClocations as locations
 from stationlist import WMsensors, bestWMsensor
 import sys
 from collectdatatools import validationfile
-#import calendar
 
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
-interactive=True
-
-
-timeplist=['201704','201705']#,'201706']
+timeplist=['201704','201705','201706']
 
 timestr='2017 Apr-Jun'
 timestrt='2017_Apr-Jun'
@@ -174,27 +167,50 @@ timeunit = "days since 2001-01-01 12:00:00 UTC"
 
 
 # produce netcdf file:
-nc = Dataset('Arc-MFC_quarterlyreport_wave.nc','w')
+nc = netCDF4.Dataset(os.path.join(ppath,'ArcMFC_quarterlyreport_wave.nc'),'w')
+nc.contact = 'johannes.rohrs@met.no'
+nc.product = 'Arctic wave model WAM'
+nc.production_centre = 'Arctic MFC'
+nc.production_unit = 'Norwegian Meteorological Institute'
+nc.creation_date = str(dt.datetime.now())
+nc.thredds_web_site = 'http://thredds.met.no/thredds/myocean/ARC-MFC/mywave-arctic.html'
 
-ncdims = {'string_length':22, 'areas':1, 'metrics':3, 'surface':1, 'forecasts':10} # and time, unlim
-metric_names = ["number of data values", "root mean squared deviation", "bias"]
+ncdims = {'string_length':28, 'areas':1, 'metrics':3, 'surface':1, 'forecasts':10} # and time, unlim
+metric_names = [name.ljust(28) for name in ["number of data values", "root mean squared deviation", "bias"]]
+
 
 nc.createDimension('time',size=None)
 for name,dim in ncdims.iteritems():
     nc.createDimension(name,size=dim)
 
-nc_time = nc.createVariable('time',np.float,dimensions=('time'))
-nc_time[:] = date2num(time,units=timeunit)
+nc_time = nc.createVariable('time','f8',dimensions=('time'))
+nc_time[:] = netCDF4.date2num(time,units=timeunit)
 nc_time.units = timeunit
 nc_time.long_name = 'validity time'
 
-nc_metricnames = nc.createVariable('metric.names','str', dimensions=('metrics')) 
-nc_metricnames[:] = sp.array(metric_names)
+nc_metricnames = nc.createVariable('metric_names','S1', dimensions=(u'metrics',u'string_length')) 
+nc_metricnames[:] = netCDF4.stringtochar(np.array(metric_names))
+
+nc_areanames = nc.createVariable('area_names','S1', dimensions=(u'areas',u'string_length')) 
+nc_areanames[0] = netCDF4.stringtochar(np.array('North Sea and Norwegian Sea'.ljust(28)))
+nc_areanames.long_name = 'area names'
+nc_areanames.description = 'region over which statistics are aggregated'
+
+nc_leadtime = nc.createVariable('forecasts','f4',dimensions=('forecasts'))
+nc_leadtime.long_name = 'forecast lead time'
+nc_leadtime.units = 'hours'
+nc_leadtime[:] = sp.arange(12,229,24)
 
 
-varlongname = {'Hs':'stats_sea_surface_significant_wave_height'}
+varArcMFCname = {'Hs': 'stats_VHM0'}
+varstandardname = {'Hs':'sea_surface_wave_significant_height'}
 
-ncvar = nc.createVariable(varlongname[varname],np.float, dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'))
+ncvar = nc.createVariable(varArcMFCname[varname],'f4', dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'))
+ncvar.standard_name = varstandardname[varname]
+ncvar.parameter = varArcMFCname[varname]
+ncvar.units = 'm'
+ncvar.reference_source = 'wave data from offshore platforms available from d22 files at the Norwegian Meteorological Institute'
+
 
 # calculate statistics (bias and root-mean-square difference)
 
