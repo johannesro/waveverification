@@ -15,7 +15,7 @@ from collectdatatools import validationfile
 
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
-timeplist=['201704','201705','201706']
+timeplist=['201704','201705']#,'201706']
 
 timestr='2017 Apr-Jun'
 timestrt='2017_Apr-Jun'
@@ -164,10 +164,12 @@ varS = var.reshape(var.shape[0],nhours,var.shape[1]/nhours,var.shape[2])
 
 time = time_all[::6]
 timeunit = "days since 2001-01-01 12:00:00 UTC"
-
+time_start = time[0].strftime('%Y%m%d')
+time_end = time[-1].strftime('%Y%m%d')
+print(time_start, time_end)
 
 # produce netcdf file:
-nc = netCDF4.Dataset(os.path.join(ppath,'ArcMFC_quarterlyreport_wave.nc'),'w')
+nc = netCDF4.Dataset(os.path.join(ppath,'product_quality_stats_ARCTIC_ANALYSIS_FORECAST_WAV_002_006_'+time_start+'-'+time_end+'.nc'),'w')
 nc.contact = 'johannes.rohrs@met.no'
 nc.product = 'Arctic wave model WAM'
 nc.production_centre = 'Arctic MFC'
@@ -175,8 +177,8 @@ nc.production_unit = 'Norwegian Meteorological Institute'
 nc.creation_date = str(dt.datetime.now())
 nc.thredds_web_site = 'http://thredds.met.no/thredds/myocean/ARC-MFC/mywave-arctic.html'
 
-ncdims = {'string_length':28, 'areas':1, 'metrics':3, 'surface':1, 'forecasts':10} # and time, unlim
-metric_names = [name.ljust(28) for name in ["number of data values", "root mean squared deviation", "bias"]]
+ncdims = {'string_length':28, 'areas':1, 'metrics':4, 'surface':1, 'forecasts':10} # and time, unlim
+metric_names = [name.ljust(28) for name in ["mean of product", "mean of reference", "mean square difference", "number of data values"]]
 
 
 nc.createDimension('time',size=None)
@@ -215,9 +217,14 @@ ncvar.reference_source = 'wave data from offshore platforms available from d22 f
 # calculate statistics (bias and root-mean-square difference)
 
 for leadtime in range(10):
-    ncvar[:,leadtime,0,2,0] = sp.array([vt.bias( *vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])) for i in range(obsS.shape[2])])
-    ncvar[:,leadtime,0,1,0] = sp.array([vt.rmsd( *vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])) for i in range(obsS.shape[2])])
-    ncvar[:,leadtime,0,0,0] = sp.array([ len(vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])[1]) for i in range(obsS.shape[2])])
+    # mean of product
+    ncvar[:,leadtime,0,0,0] = sp.array([sp.mean( vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])[1]) for i in range(obsS.shape[2])])
+    # mean of reference
+    ncvar[:,leadtime,0,1,0] = sp.array([sp.mean( vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])[0]) for i in range(obsS.shape[2])])
+    # mean square difference
+    ncvar[:,leadtime,0,2,0] = sp.array([vt.msd( *vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])) for i in range(obsS.shape[2])])
+    # number of data values
+    ncvar[:,leadtime,0,3,0] = sp.array([ len(vt.returnclean(obsS[:,:,i],varS[:,:,i,leadtime])[1]) for i in range(obsS.shape[2])])
 
 nc.close()
 

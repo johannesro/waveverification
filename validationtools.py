@@ -91,6 +91,16 @@ def rmsd(a,b):
 
 rmse = rmsd # root mean square error
 
+def msd(a,b):
+    '''
+    mean square deviation
+    '''
+    a,b = sp.array(a),sp.array(b)
+    n = len(a)
+    diff2 = (a-b)**2
+    return diff2.sum()/n
+
+
 def amerr(a,b):
     '''
     absolute mean error
