@@ -3,7 +3,8 @@
 #$ -l h_rt=10:00:00
 #$ -S /bin/bash
 #$ -pe mpi 1
-#$ -q ded-parallel.q
+#$ -l h_vmem=1000M
+#$ -q ded-parallelx.q
 #$ -M johannesro@met.no
 #$ -m abe
 #$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
