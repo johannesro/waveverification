@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ./validate 201409
+
 import scipy as sp
 import numpy as np
 #import numpy.ma as ma
@@ -22,10 +22,10 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 interactive=True
 
 
-timeplist=['201704','201705']#,'201706']
+timeplist=['201707','201708','201709']
 
-timestr='2017 Apr-Jun'
-timestrt='2017_Apr-Jun'
+timestr='2017 Jul-Sep'
+timestrt='2017_Jul-Sep'
 print('time: '+timestr)
 
 

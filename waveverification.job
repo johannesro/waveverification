@@ -5,8 +5,8 @@
 #$ -pe mpi 1
 #$ -l h_vmem=1000M
 #$ -q ded-parallelx.q
-#$ -M johannesro@met.no
-#$ -m abe
+# -M johannesro@met.no
+# -m abe
 #$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
 #$ -cwd 
 #$ -j y
