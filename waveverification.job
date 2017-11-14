@@ -18,9 +18,6 @@ echo "Got $NSLOTS slots."
 
 cd /home/johannesro/waveverification 
 
-touch test1.txt
-touch /home/johannesro/waveverification/test2.txt
-
 # gather data
 ./collectdata.py > /home/johannesro/waveverification/collectdata.log
 
