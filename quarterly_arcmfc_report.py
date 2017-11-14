@@ -15,10 +15,10 @@ from collectdatatools import validationfile
 
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
-timeplist=['201707','201708','201709']
+timeplist=['201710','201711','201712']
 
-timestr='2017 Jul-Sep'
-timestrt='2017_Jul-Sep'
+timestr='2017 Oct-Dec'
+timestrt='2017_Oct-Dec'
 print('time: '+timestr)
 
 
