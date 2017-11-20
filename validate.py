@@ -43,6 +43,7 @@ timestr = t1.strftime('%Y%m')
 # plotpath
 #ppath = '/vol/hindcast3/waveverification/'+timep+'/'
 ppath = '/lustre/storeA/project/fou/hi/waveverification/'+timestr+'/'
+#ppath = '/lustre/storeA/users/patrikb/waveverification/'+timestr+'/'
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}

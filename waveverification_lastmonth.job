@@ -5,7 +5,7 @@
 #$ -pe mpi 1
 #$ -l h_vmem=1000M
 #$ -q ded-parallelx.q
-#$ -M johannesro@met.no
+#$ -M patrikb@met.no
 #$ -m abe
 #$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
 #$ -cwd 
@@ -26,10 +26,10 @@ lyear=`date -d "${year}/${month}/01-1 days" +"%Y"`
 
 echo waveverification for ${lyear} ${lmonth} 
 
-cd /home/johannesro/waveverification
+cd /home/patrikb/waveverification
 
 # gather data
-./collectdata.py  ${lyear} ${lmonth} > /home/johannesro/waveverification/collectdata_lastmonth.log
+./collectdata.py  ${lyear} ${lmonth} > /home/patrikb/waveverification/collectdata_lastmonth.log
 
 # make plots
 ./validate.py  ${lyear} ${lmonth} 
@@ -47,6 +47,3 @@ cd /lustre/storeA/project/fou/hi/waveverification/website
 # upload webpage
 cd /lustre/storeA/project/fou/hi/waveverification
 ./upload.sh
-
-
-

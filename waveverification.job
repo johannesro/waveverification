@@ -5,7 +5,7 @@
 #$ -pe mpi 1
 #$ -l h_vmem=1000M
 #$ -q ded-parallelx.q
-#$ -M johannesro@met.no
+#$ -M patrikb@met.no
 #$ -m abe
 #$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
 #$ -cwd 
@@ -16,16 +16,13 @@ echo "Got $NSLOTS slots."
 
 #export R_LIBS=/modules/trusty/R/3.2.1/lib/R
 
-cd /home/johannesro/waveverification 
-
-touch test1.txt
-touch /home/johannesro/waveverification/test2.txt
+cd /home/patrikb/waveverification
 
 # gather data
-./collectdata.py > /home/johannesro/waveverification/collectdata.log
+./collectdata.py > /home/patrikb/waveverification/collectdata.log
 
 # make plots
-./validate.py > /home/johannesro/waveverification/validate.log
+./validate.py > /home/patrikb/waveverification/validate.log
 
 # update webpage
 cd /lustre/storeA/project/fou/hi/waveverification/website
@@ -37,6 +34,3 @@ cd /lustre/storeA/project/fou/hi/waveverification/website
 # upload webpage
 cd /lustre/storeA/project/fou/hi/waveverification
 ./upload.sh
-
-
-
