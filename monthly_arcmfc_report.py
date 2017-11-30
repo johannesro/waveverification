@@ -13,17 +13,24 @@ from stationlist import WMsensors, bestWMsensor
 import sys
 from collectdatatools import validationfile
 
+"""
+This script establishes the arcmfc-report file. 
+For securing results two harddisks store{A,B} are mirrored and mirrored 
+with the script ... located in my home folder. ... is executed each time
+the arcmfc-report is created.
+"""
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
-timeplist=['201704','201705']#,'201706']
+timeplist=['201707','201708','201709']
 
-timestr='2017 Apr-Jun'
-timestrt='2017_Apr-Jun'
+timestr='2017 Jul-Sep'
+timestrt='2017_Jul-Sep'
 print('time: '+timestr)
 
 
 # plotpath
-ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
+#ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
+ppath = '/lustre/storeA/project/fou/om/waveverification/Arc-MFC/'+timestrt+'/'
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
@@ -86,7 +93,8 @@ for station, parameters in locations.iteritems():
         print 'read data for station '+station+' for '+timep
 
         # open file
-        path = '/lustre/storeA/project/fou/hi/waveverification/data'
+        #path = '/lustre/storeA/project/fou/hi/waveverification/data'
+        path = '/lustre/storeA/users/patrikb/waveverification/data'
         
         year,month = int(timep[0:4]),int(timep[4:6])
         vf = validationfile(path,station,year,month)
@@ -170,7 +178,7 @@ print(time_start, time_end)
 
 # produce netcdf file:
 nc = netCDF4.Dataset(os.path.join(ppath,'product_quality_stats_ARCTIC_ANALYSIS_FORECAST_WAV_002_006_'+time_start+'-'+time_end+'.nc'),'w')
-nc.contact = 'johannes.rohrs@met.no'
+nc.contact = 'patrikb@met.no'
 nc.product = 'Arctic wave model WAM'
 nc.production_centre = 'Arctic MFC'
 nc.production_unit = 'Norwegian Meteorological Institute'
