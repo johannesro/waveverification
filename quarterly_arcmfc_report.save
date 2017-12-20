@@ -12,43 +12,18 @@ from stationlist import ARCMFClocations as locations
 from stationlist import WMsensors, bestWMsensor
 import sys
 from collectdatatools import validationfile
-from dateutil.relativedelta import relativedelta
 
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
-###
-#timeplist=['201704','201705']#,'201706']
-#
-#timestr='2017 Apr-Jun'
-#timestrt='2017_Apr-Jun'
-#print('time: '+timestr)
+timeplist=['201704','201705']#,'201706']
 
-## plotpath
-#ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
-###
-
-now=dt.datetime.now()
-pm=now - relativedelta(months=1) # converts to previous month
-pm1=now - relativedelta(months=2) # converts to previous month
-pm2=now - relativedelta(months=3) # converts to previous month
-timeplist=[str(pm2.year)+str(pm2.month),str(pm1.year)+str(pm1.month),str(pm.year)+str(pm.month)]
-
-timestr= pm.strftime("%Y") + ' ' + pm2.strftime("%b") +  '-'  + pm.strftime("%b")
-timestrt= pm.strftime("%Y") + '_' + pm2.strftime("%b") +  '-' + pm.strftime("%b")
+timestr='2017 Apr-Jun'
+timestrt='2017_Apr-Jun'
 print('time: '+timestr)
 
-# copy necessary files to my folder (only interim solution)
-# cp *_201711.nc /lustre/storeA/users/patrikb/waveverification/data/.
-#cmd = 'cp /lustre/storeA/project/fou/hi/waveverification/data/*_' + timeplist[0] + '.nc /lustre/storeA/users/patrikb/waveverification/data/.'
-#os.system(cmd)
-# --> copying should not be necessary since it is already done for the monthly report, therfore quarterly should be executed after monthly
 
 # plotpath
-#ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
-ppath = '/lustre/storeA/project/fou/om/waveverification/Arc-MFC/quarterly/'+timestrt+'/'
-
-# plotpath
-#ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
+ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
@@ -111,8 +86,7 @@ for station, parameters in locations.iteritems():
         print 'read data for station '+station+' for '+timep
 
         # open file
-        #path = '/lustre/storeA/project/fou/hi/waveverification/data'
-	path = '/lustre/storeA/users/patrikb/waveverification/data'
+        path = '/lustre/storeA/project/fou/hi/waveverification/data'
         
         year,month = int(timep[0:4]),int(timep[4:6])
         vf = validationfile(path,station,year,month)
@@ -233,7 +207,7 @@ nc_leadtime[:] = sp.arange(12,229,24)
 varArcMFCname = {'Hs': 'stats_VHM0'}
 varstandardname = {'Hs':'sea_surface_wave_significant_height'}
 
-ncvar = nc.createVariable(varArcMFCname[varname],'f4', dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'), fill_value=9999.)
+ncvar = nc.createVariable(varArcMFCname[varname],'f4', dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'))
 ncvar.standard_name = varstandardname[varname]
 ncvar.parameter = varArcMFCname[varname]
 ncvar.units = 'm'

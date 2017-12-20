@@ -37,7 +37,7 @@ cmd = 'cp /lustre/storeA/project/fou/hi/waveverification/data/*_' + timeplist[0]
 os.system(cmd)
 # plotpath
 #ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
-ppath = '/lustre/storeA/project/fou/om/waveverification/Arc-MFC/'+timestrt+'/'
+ppath = '/lustre/storeA/project/fou/om/waveverification/Arc-MFC/monthly/'+timestrt+'/'
 
 # set color table for models
 ct = {'Subjective': 'b', 'WAM10': 'c', 'WAM4':'m', 'ECWAM':'k', 'LAWAM':'0.25', 'AROME': 'b', 'HIRLAM8': 'y', 'MWAM4':'r', 'EXP':'y', 'MWAM4exp':'w', 'MWAM10':'w', 'MWAM8':'g'}
