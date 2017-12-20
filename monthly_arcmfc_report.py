@@ -12,6 +12,7 @@ from stationlist import ARCMFClocations as locations
 from stationlist import WMsensors, bestWMsensor
 import sys
 from collectdatatools import validationfile
+from dateutil.relativedelta import relativedelta
 
 """
 This script establishes the arcmfc-report file. 
@@ -21,13 +22,19 @@ the arcmfc-report is created.
 """
 print("The Python version is %s.%s.%s" % sys.version_info[:3])
 
-timeplist=['201707','201708','201709']
+#timeplist=['201707','201708','201709'] # Usage still possible with limitations, see in the following few lines the issues with copying files and naming of folders. This will soon be depricated
+now=dt.datetime.now()
+pm=now - relativedelta(months=1) # converts to previous month
+timeplist=[str(pm.year)+str(pm.month)]
 
-timestr='2017 Jul-Sep'
-timestrt='2017_Jul-Sep'
+timestr='2017 ' + pm.strftime("%b")
+timestrt='2017_' + pm.strftime("%b")
 print('time: '+timestr)
 
-
+# copy necessary files to my folder (only interim solution)
+# cp *_201711.nc /lustre/storeA/users/patrikb/waveverification/data/.
+cmd = 'cp /lustre/storeA/project/fou/hi/waveverification/data/*_' + timeplist[0] + '.nc /lustre/storeA/users/patrikb/waveverification/data/.'
+os.system(cmd)
 # plotpath
 #ppath = '/lustre/storeA/project/fou/hi/waveverification/Arc-MFC/'+timestrt+'/'
 ppath = '/lustre/storeA/project/fou/om/waveverification/Arc-MFC/'+timestrt+'/'
@@ -139,7 +146,7 @@ for station, parameters in locations.iteritems():
     for mod in mod_long.keys():
         mod_longa[mod] = np.concatenate(mod_long[mod],axis=1)
 
-    print '%s, %s' % (station, str(mod_long['MWAM8'][1].shape))
+    #print '%s, %s' % (station, str(mod_long['MWAM8'][1].shape))
 
     # append to list for all stations:
     obs_all.append(obs_long)
@@ -215,7 +222,7 @@ nc_leadtime[:] = sp.arange(12,229,24)
 varArcMFCname = {'Hs': 'stats_VHM0'}
 varstandardname = {'Hs':'sea_surface_wave_significant_height'}
 
-ncvar = nc.createVariable(varArcMFCname[varname],'f4', dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'))
+ncvar = nc.createVariable(varArcMFCname[varname],'f4', dimensions=('time', 'forecasts', 'surface', 'metrics', 'areas'), fill_value=9999.)
 ncvar.standard_name = varstandardname[varname]
 ncvar.parameter = varArcMFCname[varname]
 ncvar.units = 'm'
