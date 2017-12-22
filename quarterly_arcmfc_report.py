@@ -196,7 +196,8 @@ print(time_start, time_end)
 
 # produce netcdf file:
 nc = netCDF4.Dataset(os.path.join(ppath,'product_quality_stats_ARCTIC_ANALYSIS_FORECAST_WAV_002_006_'+time_start+'-'+time_end+'.nc'),'w')
-nc.contact = 'johannes.rohrs@met.no'
+#nc.contact = 'johannes.rohrs@met.no'
+nc.contact = 'patrikb@met.no'
 nc.product = 'Arctic wave model WAM'
 nc.production_centre = 'Arctic MFC'
 nc.production_unit = 'Norwegian Meteorological Institute'
