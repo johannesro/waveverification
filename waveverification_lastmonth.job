@@ -35,7 +35,7 @@ cd /home/johannesro/waveverification
 ./validate.py  ${lyear} ${lmonth} 
 
 # make quarterly Arc-MFC report file
-./quarterly_arcmfc_report.py ${lyear} ${lmonth}
+#./quarterly_arcmfc_report.py ${lyear} ${lmonth}
 
 # update webpage
 cd /lustre/storeA/project/fou/hi/waveverification/website

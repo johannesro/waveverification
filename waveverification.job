@@ -3,10 +3,10 @@
 #$ -l h_rt=2:00:00
 #$ -S /bin/bash
 #$ -pe mpi 1
-#$ -l h_vmem=1000M
+#$ -l h_vmem=2G
 #$ -q ded-parallelx.q
-# -M johannesro@met.no
-# -m abe
+#$ -M johannesro@met.no
+#$ -m abe
 #$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
 #$ -cwd 
 #$ -j y
@@ -19,7 +19,9 @@ echo "Got $NSLOTS slots."
 cd /home/johannesro/waveverification 
 
 # gather data
-./collectdata.py > /home/johannesro/waveverification/collectdata.log
+echo 'start collectdata.py' > /home/johannesro/waveverification/collectdata.log
+./collectdata.py >> /home/johannesro/waveverification/collectdata.log
+echo 'finished collectdata.py' >> /home/johannesro/waveverification/collectdata.log
 
 # make plots
 ./validate.py > /home/johannesro/waveverification/validate.log

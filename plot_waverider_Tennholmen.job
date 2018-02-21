@@ -1,0 +1,24 @@
+#!/bin/bash 
+#$ -N plot_waverider
+#$ -l h_rt=00:30:00
+#$ -S /bin/bash
+#$ -pe mpi 1
+#$ -l h_vmem=2G
+#$ -q ded-parallelx.q
+#$ -M johannesro@met.no
+#$ -m abe
+#$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
+#$ -cwd 
+#$ -j y
+# ---------------------------
+
+echo "Got $NSLOTS slots."
+
+# make plot for Tennholmen waverider
+echo 'start script ' > /home/johannesro/waveverification/plot_waverider_Tennholmen.log
+python2.7 plot_waverider_Tennholmen.py >> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
+
+#./plot_waverider_Tennholmen.py >> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
+
+
+
