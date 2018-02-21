@@ -1,6 +1,8 @@
 #!/usr/bin/env python2.7
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import time
 from datetime import datetime, timedelta
@@ -9,7 +11,9 @@ from matplotlib.dates import DayLocator, HourLocator, DateFormatter
 import os
 import METread
 
-print 'hallo'
+datapath = '/lustre/storeA/project/fou/hi/waveverification/'
+#os.chdir(datapath)
+print(os.getcwd())
 
 #### Read Hs and Tz 
 #y, m, d, H, M, Hs, Tz = np.loadtxt('/home/kaihc/DATAWELL/ASCII/waveriderdata.txt', skiprows=1, unpack=True)
@@ -53,24 +57,26 @@ dteLOCALplot = dteLOCAL[-N:]
 ### fetch model data
 modelinterval = 6
 modelrun = today - timedelta(hours=today.hour % modelinterval) 
-try:
-    wam = METread.MWAM4_modrun(location, modelrun, ['Hs', 'Tp'])
-except np.isnan(wam['Hs']).all():
+wam = METread.MWAM4_modrun(location, modelrun, ['Hs', 'Tp'])
+if np.isnan(wam['Hs']).all():
     modelrun = today - (timedelta(hours=today.hour % modelinterval)) - timedelta(hours=modelinterval) 
     wam = METread.MWAM4_modrun(location, modelrun, ['Hs', 'Tp'])
+
+print('reading model data complete')
 
 wamtimeUTC  = [wam['time'][i].replace(tzinfo=UTC) for i in range(len(wam['time']))]
 wamtimeLOCAL = [wamtimeUTC[i].astimezone(HERE) for i in range(len(wam['time']))]
 
 #### Plot Hs and Ts in same figure
 fig = plt.figure()
+print('initiated figure')
 
 ax1 = fig.add_subplot(111)
 ax1.plot(dteLOCALplot, HsPlot, 'bd-', linewidth = 3, label='waverider')
 ax1.plot(wamtimeLOCAL, wam['Hs'], 'b--', linewidth = 3, label='forecast')
 plt.legend(loc='lower right')
 
-xlabelStr = "Local time (" + zoneName + ")"
+xlabelStr = "Local time"
 xlab = ax1.set_xlabel(xlabelStr, fontsize = 14)
 
 # Make the y-axis label and tick labels match the line color.
@@ -93,7 +99,6 @@ for tl in ax2.get_yticklabels():
     tl.set_color('g')
 
 
-
 titlestr = "Vestfjorden waverider"
 
 # Plot every third hour with minor ticks, but remove at midnight
@@ -109,6 +114,7 @@ plt.title(titlestr, fontsize = 20)
 #fig.autofmt_xdate()
 ax1.grid('on', axis='x', which='both')
 
+print('save figure Tennholmen_ts.png')
 plt.savefig('Tennholmen_ts.png', bbox_extra_artists=(xlab,), bbox_inches='tight')
 
 os.system('rsync -u Tennholmen_ts.png projects.met.no:/var/www/waverider/.')

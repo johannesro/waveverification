@@ -16,7 +16,8 @@ echo "Got $NSLOTS slots."
 
 # make plot for Tennholmen waverider
 echo 'start script ' > /home/johannesro/waveverification/plot_waverider_Tennholmen.log
-python2.7 plot_waverider_Tennholmen.py >> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
+cd /lustre/storeA/project/fou/hi/waveverification
+python /home/johannesro/waveverification/plot_waverider_Tennholmen.py &> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
 
 #./plot_waverider_Tennholmen.py >> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
 

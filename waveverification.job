@@ -19,12 +19,10 @@ echo "Got $NSLOTS slots."
 cd /home/johannesro/waveverification 
 
 # gather data
-echo 'start collectdata.py' > /home/johannesro/waveverification/collectdata.log
-./collectdata.py >> /home/johannesro/waveverification/collectdata.log
-echo 'finished collectdata.py' >> /home/johannesro/waveverification/collectdata.log
+./collectdata.py &> /home/johannesro/waveverification/collectdata.log
 
 # make plots
-./validate.py > /home/johannesro/waveverification/validate.log
+./validate.py &> /home/johannesro/waveverification/validate.log
 
 # update webpage
 cd /lustre/storeA/project/fou/hi/waveverification/website
