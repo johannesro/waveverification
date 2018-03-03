@@ -25,10 +25,13 @@ print("The Python version is %s.%s.%s" % sys.version_info[:3])
 #timeplist=['201707','201708','201709'] # Usage still possible with limitations, see in the following few lines the issues with copying files and naming of folders. This will soon be depricated
 now=dt.datetime.now()
 pm=now - relativedelta(months=1) # converts to previous month
-timeplist=[str(pm.year)+str(pm.month)]
+if pm.month<10:
+    timeplist=[str(pm.year)+ '0' +str(pm.month)]
+else:
+    timeplist=[str(pm.year) +str(pm.month)]
 
-timestr='2017 ' + pm.strftime("%b")
-timestrt='2017_' + pm.strftime("%b")
+timestr='2018 ' + pm.strftime("%b")
+timestrt='2018_' + pm.strftime("%b")
 print('time: '+timestr)
 
 # copy necessary files to my folder (only interim solution)
