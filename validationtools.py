@@ -91,6 +91,13 @@ def rmsd(a,b):
 
 rmse = rmsd # root mean square error
 
+def sigma2(a,b):
+    '''
+    compute sigma squares (=variances) as additional part 
+    of the rmse decomposition as in Wilk's statistic book
+    '''
+    s2a, s2b = np.var(a), np.var(b)
+
 def msd(a,b):
     '''
     mean square deviation

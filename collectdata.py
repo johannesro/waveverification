@@ -164,5 +164,7 @@ for station, coordinate in locations.iteritems():
     stafile.nc.last_update_day = stationstartday + stationnumdays - 1
     stafile.nc.close()
 
-
+#
+# collect altimeter data
+#
 
