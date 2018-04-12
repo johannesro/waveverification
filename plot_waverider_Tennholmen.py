@@ -11,7 +11,7 @@ from matplotlib.dates import DayLocator, HourLocator, DateFormatter
 import os
 import METread
 
-datapath = '/lustre/storeA/project/fou/hi/waveverification/'
+datapath = '/lustre/storeA/project/fou/om/waveverification/'
 #os.chdir(datapath)
 print(os.getcwd())
 
@@ -117,7 +117,8 @@ ax1.grid('on', axis='x', which='both')
 print('save figure Tennholmen_ts.png')
 plt.savefig('Tennholmen_ts.png', bbox_extra_artists=(xlab,), bbox_inches='tight')
 
-os.system('rsync -u Tennholmen_ts.png projects.met.no:/var/www/waverider/.')
+#os.system('rsync -u Tennholmen_ts.png projects.met.no:/var/www/waverider/.')
+os.system('scp Tennholmen_ts.png projects.met.no:/var/www/waverider/.')
 
 #plt.show()
 

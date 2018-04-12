@@ -5,9 +5,9 @@
 #$ -pe mpi 1
 #$ -l h_vmem=2G
 #$ -q ded-parallelx.q
-# -M johannesro@met.no
+# -M patrikb@met.no
 # -m abe
-#$ -o /lustre/storeA/project/fou/hi/waveverification/logs/
+#$ -o /lustre/storeA/project/fou/om/waveverification/logs/
 #$ -cwd 
 #$ -j y
 # ---------------------------
@@ -15,11 +15,11 @@
 echo "Got $NSLOTS slots."
 
 # make plot for Tennholmen waverider
-echo 'start script ' > /home/johannesro/waveverification/plot_waverider_Tennholmen.log
-cd /lustre/storeA/project/fou/hi/waveverification
-python /home/johannesro/waveverification/plot_waverider_Tennholmen.py &> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
+echo 'start script ' > /home/patrikb/waveverification/plot_waverider_Tennholmen.log
+cd /lustre/storeA/project/fou/om/waveverification
+python /home/patrikb/waveverification/plot_waverider_Tennholmen.py &> /home/patrikb/waveverification/plot_waverider_Tennholmen.log
 
-#./plot_waverider_Tennholmen.py >> /home/johannesro/waveverification/plot_waverider_Tennholmen.log
+#./plot_waverider_Tennholmen.py >> /home/patrikb/waveverification/plot_waverider_Tennholmen.log
 
 
 
